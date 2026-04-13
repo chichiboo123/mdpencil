@@ -1,0 +1,86 @@
+{
+  "app": {
+    "title": "MD Pencil",
+    "subtitle": "画像やPDFの文字をMarkdown形式のデジタルテキストに変換します。",
+    "description": "ファイルをアップロードするか画像を貼り付けると、OCRでテキストを抽出し、きれいなMarkdownドキュメントに整理します。編集・コピー・ダウンロード・音声読み上げまで、すべてここで。"
+  },
+  "upload": {
+    "title": "ファイルアップロード",
+    "dragDrop": "ファイルをここにドラッグ＆ドロップ",
+    "or": "または",
+    "browse": "ファイルを選択",
+    "paste": "クリップボードから画像の貼り付けも可能です（Ctrl+V）",
+    "supported": "対応形式：JPG, PNG, WEBP, PDF",
+    "maxSize": "最大ファイルサイズ：20MB"
+  },
+  "preview": {
+    "title": "原本プレビュー",
+    "page": "ページ",
+    "of": "/",
+    "noFile": "アップロードされたファイルはありません。"
+  },
+  "editor": {
+    "title": "Markdown結果",
+    "placeholder": "OCRの結果がここに表示されます。\n直接テキストを入力・編集することもできます。"
+  },
+  "toolbar": {
+    "copy": "コピー",
+    "download": "ダウンロード",
+    "clear": "クリア",
+    "copied": "クリップボードにコピーしました！",
+    "downloaded": "ファイルをダウンロードしました！",
+    "cleared": "編集内容をクリアしました。",
+    "copyFail": "コピーに失敗しました。ブラウザの設定を確認してください。",
+    "noContent": "コピーする内容がありません。"
+  },
+  "tts": {
+    "play": "読み上げ",
+    "pause": "一時停止",
+    "resume": "再開",
+    "stop": "停止",
+    "speed": "速度",
+    "noContent": "読み上げる内容がありません。",
+    "notSupported": "このブラウザでは音声読み上げに対応していません。"
+  },
+  "ocr": {
+    "processing": "OCR処理中...",
+    "progressInit": "OCRエンジンを準備しています...",
+    "progressRecognize": "テキストを認識しています...",
+    "success": "テキスト抽出が完了しました！",
+    "fail": "テキストを抽出できませんでした。画像が鮮明か確認してください。",
+    "noText": "画像からテキストが見つかりませんでした。別の画像をお試しください。",
+    "pdfFail": "PDFファイルを処理できませんでした。ファイルが破損していないか確認してください。",
+    "langLabel": "OCR認識言語",
+    "langKo": "韓国語",
+    "langEn": "英語",
+    "langJa": "日本語"
+  },
+  "help": {
+    "title": "使い方ガイド",
+    "close": "閉じる",
+    "section1Title": "MD Pencilとは？",
+    "section1Body": "MD Pencilは画像やPDFファイルからテキストを抽出し、Markdown形式に整理するツールです。学習プリント、お知らせ、台本などを簡単にデジタル文書に変換できます。",
+    "section2Title": "使い方",
+    "step1": "画像（JPG, PNG, WEBP）またはPDFファイルをアップロード、もしくはクリップボードから画像を貼り付けます。",
+    "step2": "OCRが自動的にテキストを抽出し、Markdown形式に整理します。",
+    "step3": "結果を自由に編集できます。",
+    "step4": "コピー、ダウンロード、音声読み上げボタンで結果を活用しましょう。",
+    "section3Title": "Markdownとは？",
+    "section3Body": "Markdownは簡単な記号を使って文書の構造を表現する方法です。誰でも簡単に覚えられます！",
+    "mdHeading": "# で見出しになります",
+    "mdSubheading": "## で小見出しになります",
+    "mdList": "- でリスト項目になります",
+    "mdBold": "**テキスト** で太字になります",
+    "mdParagraph": "空行を入れると段落が分かれます",
+    "section4Title": "音声読み上げ（TTS）について",
+    "section4Body": "ブラウザの音声機能でテキストを読み上げます。再生、一時停止、停止、速度調節が可能です。Markdown記号（#、-など）は自動的に除去され、自然に読み上げられます。"
+  },
+  "footer": {
+    "credit": "Created by. 教育ミュージカルを夢見るチス先生"
+  },
+  "lang": {
+    "ko": "한국어",
+    "en": "English",
+    "ja": "日本語"
+  }
+}
