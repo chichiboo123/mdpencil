@@ -38,11 +38,8 @@
     "speed": "속도",
     "voice": "음성",
     "voiceDefault": "기본 음성",
-    "record": "녹음",
-    "recording": "녹음 중...",
-    "recordComplete": "음성 파일이 다운로드되었습니다!",
-    "recordFail": "녹음에 실패했습니다. 탭 오디오 공유를 허용해주세요.",
-    "recordNotSupported": "이 브라우저에서는 음성 녹음이 지원되지 않습니다. Chrome을 사용해주세요.",
+    "voiceFemale": "여성",
+    "voiceMale": "남성",
     "noContent": "읽을 내용이 없습니다.",
     "notSupported": "이 브라우저에서는 음성 읽기가 지원되지 않습니다."
   },

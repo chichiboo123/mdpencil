@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ttsController, recordTtsAudio } from '../utils/tts';
+import { ttsController } from '../utils/tts';
 import { markdownToReadableText } from '../utils/markdown';
 import styles from './TtsControls.module.css';
 
@@ -8,9 +8,8 @@ export default function TtsControls({ content, showToast }) {
   const { t, i18n } = useTranslation();
   const [ttsState, setTtsState] = useState({ isSpeaking: false, isPaused: false });
   const [rate, setRate] = useState(1.0);
-  const [voices, setVoices] = useState([]);
-  const [selectedVoiceURI, setSelectedVoiceURI] = useState('');
-  const [recording, setRecording] = useState(false);
+  const [genderedVoices, setGenderedVoices] = useState({ female: null, male: null });
+  const [selectedGender, setSelectedGender] = useState('');
 
   useEffect(() => {
     ttsController.onStateChange = setTtsState;
@@ -20,12 +19,12 @@ export default function TtsControls({ content, showToast }) {
     };
   }, []);
 
-  // Load voices when language changes
+  // 언어 변경 시 음성 목록 갱신
   useEffect(() => {
     const loadVoices = () => {
-      const available = ttsController.getVoices(i18n.language);
-      setVoices(available);
-      setSelectedVoiceURI('');
+      const voices = ttsController.getGenderedVoices(i18n.language);
+      setGenderedVoices(voices);
+      setSelectedGender('');
       ttsController.setVoice(null);
     };
     loadVoices();
@@ -33,65 +32,33 @@ export default function TtsControls({ content, showToast }) {
     return () => window.speechSynthesis?.removeEventListener?.('voiceschanged', loadVoices);
   }, [i18n.language]);
 
-  const getReadableText = useCallback(() => {
-    return markdownToReadableText(content);
-  }, [content]);
-
   const handlePlay = useCallback(() => {
     if (!ttsController.supported) {
       showToast(t('tts.notSupported'), 'error');
       return;
     }
-    const text = getReadableText();
+    const text = markdownToReadableText(content);
     if (!text) {
       showToast(t('tts.noContent'), 'info');
       return;
     }
     ttsController.setRate(rate);
     ttsController.play(text, i18n.language);
-  }, [getReadableText, rate, i18n.language, showToast, t]);
+  }, [content, rate, i18n.language, showToast, t]);
 
-  const handleVoiceChange = (e) => {
-    const uri = e.target.value;
-    setSelectedVoiceURI(uri);
-    if (!uri) {
+  const handleGenderChange = (e) => {
+    const gender = e.target.value;
+    setSelectedGender(gender);
+    if (gender === 'female') {
+      ttsController.setVoice(genderedVoices.female);
+    } else if (gender === 'male') {
+      ttsController.setVoice(genderedVoices.male);
+    } else {
       ttsController.setVoice(null);
-      return;
     }
-    const voice = voices.find((v) => v.voiceURI === uri);
-    ttsController.setVoice(voice || null);
   };
 
-  const handleRecord = useCallback(async () => {
-    const text = getReadableText();
-    if (!text) {
-      showToast(t('tts.noContent'), 'info');
-      return;
-    }
-    if (!navigator.mediaDevices?.getDisplayMedia) {
-      showToast(t('tts.recordNotSupported'), 'error');
-      return;
-    }
-
-    setRecording(true);
-    try {
-      const voice = voices.find((v) => v.voiceURI === selectedVoiceURI) || null;
-      const blob = await recordTtsAudio(text, i18n.language, rate, voice);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'mdpencil-tts.webm';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      showToast(t('tts.recordComplete'), 'success');
-    } catch {
-      showToast(t('tts.recordFail'), 'error');
-    } finally {
-      setRecording(false);
-    }
-  }, [getReadableText, i18n.language, rate, selectedVoiceURI, voices, showToast, t]);
+  const hasVoiceOptions = genderedVoices.female || genderedVoices.male;
 
   return (
     <div className={styles.ttsRow}>
@@ -103,41 +70,40 @@ export default function TtsControls({ content, showToast }) {
         </button>
       ) : (
         <>
-          <button className={styles.btn} onClick={() => ttsState.isPaused ? ttsController.resume() : ttsController.pause()}>
+          <button
+            className={styles.btn}
+            onClick={() =>
+              ttsState.isPaused ? ttsController.resume() : ttsController.pause()
+            }
+          >
             <span className="material-icons">
               {ttsState.isPaused ? 'play_arrow' : 'pause'}
             </span>
           </button>
-          <button className={`${styles.btn} ${styles.btnStop}`} onClick={() => ttsController.stop()}>
+          <button
+            className={`${styles.btn} ${styles.btnStop}`}
+            onClick={() => ttsController.stop()}
+          >
             <span className="material-icons">stop</span>
           </button>
         </>
       )}
 
-      {/* Record / Download */}
-      <button
-        className={`${styles.btn} ${recording ? styles.btnRecording : ''}`}
-        onClick={handleRecord}
-        disabled={recording}
-      >
-        <span className="material-icons">{recording ? 'fiber_manual_record' : 'mic'}</span>
-        {recording ? t('tts.recording') : t('tts.record')}
-      </button>
-
-      {/* Voice selector */}
-      {voices.length > 0 && (
+      {/* Voice: Female / Male */}
+      {hasVoiceOptions && (
         <select
           className={styles.voiceSelect}
-          value={selectedVoiceURI}
-          onChange={handleVoiceChange}
+          value={selectedGender}
+          onChange={handleGenderChange}
           aria-label={t('tts.voice')}
         >
           <option value="">{t('tts.voiceDefault')}</option>
-          {voices.map((v) => (
-            <option key={v.voiceURI} value={v.voiceURI}>
-              {v.name}
-            </option>
-          ))}
+          {genderedVoices.female && (
+            <option value="female">{t('tts.voiceFemale')}</option>
+          )}
+          {genderedVoices.male && (
+            <option value="male">{t('tts.voiceMale')}</option>
+          )}
         </select>
       )}
 
@@ -149,7 +115,11 @@ export default function TtsControls({ content, showToast }) {
           max="2.0"
           step="0.1"
           value={rate}
-          onChange={(e) => { const r = parseFloat(e.target.value); setRate(r); ttsController.setRate(r); }}
+          onChange={(e) => {
+            const r = parseFloat(e.target.value);
+            setRate(r);
+            ttsController.setRate(r);
+          }}
           className={styles.speedSlider}
           aria-label={t('tts.speed')}
         />

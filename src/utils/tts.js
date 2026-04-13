@@ -1,5 +1,27 @@
 const LANG_MAP = { ko: 'ko-KR', en: 'en-US', ja: 'ja-JP' };
 
+// 성별 판별을 위한 알려진 음성 이름 패턴
+const FEMALE_HINTS = [
+  /female/i, /여성/i, /woman/i,
+  /sunhi/i, /sun-hi/i, /heami/i, /yuna/i, /sora/i, /jiyeon/i, /seonhye/i, /jihye/i,
+  /zira/i, /hazel/i, /linda/i, /samantha/i, /karen/i, /fiona/i, /moira/i, /tessa/i, /victoria/i, /susan/i, /sara/i,
+  /nanami/i, /haruka/i, /ayumi/i, /keiko/i, /aoi/i,
+  /google.*한국/i, /google.*ko/i,
+];
+const MALE_HINTS = [
+  /\bmale\b/i, /남성/i, /\bman\b/i,
+  /injoon/i, /in-joon/i, /hyunbin/i, /bongiin/i, /gookmin/i,
+  /david/i, /mark/i, /george/i, /daniel/i, /james/i, /richard/i, /thomas/i, /fred/i,
+  /takumi/i, /ichiro/i, /keitaro/i, /naoki/i, /daichi/i,
+];
+
+function guessGender(voice) {
+  const name = voice.name;
+  for (const p of FEMALE_HINTS) if (p.test(name)) return 'female';
+  for (const p of MALE_HINTS) if (p.test(name)) return 'male';
+  return null;
+}
+
 class TtsController {
   constructor() {
     this.utterance = null;
@@ -14,12 +36,34 @@ class TtsController {
     return 'speechSynthesis' in window;
   }
 
-  getVoices(lang) {
-    if (!this.supported) return [];
+  /** 현재 언어에 대해 여성/남성 음성을 반환 */
+  getGenderedVoices(lang) {
+    if (!this.supported) return { female: null, male: null };
     const locale = LANG_MAP[lang] || 'ko-KR';
-    return window.speechSynthesis
+    const prefix = locale.split('-')[0];
+    const langVoices = window.speechSynthesis
       .getVoices()
-      .filter((v) => v.lang.startsWith(locale.split('-')[0]));
+      .filter((v) => v.lang.startsWith(prefix));
+
+    let female = null;
+    let male = null;
+
+    for (const v of langVoices) {
+      const g = guessGender(v);
+      if (g === 'female' && !female) female = v;
+      if (g === 'male' && !male) male = v;
+      if (female && male) break;
+    }
+
+    // 성별을 판별하지 못한 경우, 첫 두 음성 사용
+    if (!female && !male && langVoices.length >= 2) {
+      female = langVoices[0];
+      male = langVoices[1];
+    } else if (!female && !male && langVoices.length === 1) {
+      female = langVoices[0];
+    }
+
+    return { female, male };
   }
 
   setVoice(voice) {
@@ -86,80 +130,9 @@ class TtsController {
 
   _notify() {
     if (this.onStateChange) {
-      this.onStateChange({
-        isSpeaking: this.isSpeaking,
-        isPaused: this.isPaused,
-      });
+      this.onStateChange({ isSpeaking: this.isSpeaking, isPaused: this.isPaused });
     }
   }
 }
 
 export const ttsController = new TtsController();
-
-/**
- * Record TTS audio by capturing the current tab's audio via getDisplayMedia.
- * Works in Chromium browsers (Chrome, Edge). Returns a Blob.
- */
-export async function recordTtsAudio(text, lang, rate, voice) {
-  if (!navigator.mediaDevices?.getDisplayMedia) {
-    throw new Error('not_supported');
-  }
-
-  // Request tab audio capture
-  const stream = await navigator.mediaDevices.getDisplayMedia({
-    video: true,
-    audio: true,
-    preferCurrentTab: true,
-    selfBrowserSurface: 'include',
-  });
-
-  const audioTracks = stream.getAudioTracks();
-  if (audioTracks.length === 0) {
-    stream.getTracks().forEach((t) => t.stop());
-    throw new Error('no_audio');
-  }
-
-  const audioStream = new MediaStream(audioTracks);
-  const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-    ? 'audio/webm;codecs=opus'
-    : 'audio/webm';
-
-  const recorder = new MediaRecorder(audioStream, { mimeType });
-  const chunks = [];
-  recorder.ondataavailable = (e) => {
-    if (e.data.size > 0) chunks.push(e.data);
-  };
-
-  return new Promise((resolve, reject) => {
-    recorder.onstop = () => {
-      stream.getTracks().forEach((t) => t.stop());
-      if (chunks.length === 0) {
-        reject(new Error('no_data'));
-        return;
-      }
-      const blob = new Blob(chunks, { type: mimeType });
-      resolve(blob);
-    };
-
-    recorder.start(100);
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = LANG_MAP[lang] || 'ko-KR';
-    utterance.rate = rate;
-    if (voice) utterance.voice = voice;
-
-    utterance.onend = () => {
-      setTimeout(() => {
-        if (recorder.state === 'recording') recorder.stop();
-      }, 400);
-    };
-
-    utterance.onerror = () => {
-      stream.getTracks().forEach((t) => t.stop());
-      if (recorder.state === 'recording') recorder.stop();
-      reject(new Error('tts_error'));
-    };
-
-    window.speechSynthesis.speak(utterance);
-  });
-}
