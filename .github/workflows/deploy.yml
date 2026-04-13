@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - claude/educational-webapp-production-tuznA
   workflow_dispatch:
 
 permissions:
@@ -11,7 +12,6 @@ permissions:
   pages: write
   id-token: write
 
-# 동시 배포 방지 - 진행 중인 배포는 완료하되 대기 중인 것은 취소
 concurrency:
   group: pages
   cancel-in-progress: false
