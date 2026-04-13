@@ -22,8 +22,6 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [ocrLang, setOcrLang] = useState('ko');
-
-  // OCR loading state
   const [loading, setLoading] = useState(false);
   const [ocrProgress, setOcrProgress] = useState({ stage: '', progress: 0 });
 
@@ -39,7 +37,17 @@ export default function App() {
     }, 2500);
   }, []);
 
-  // Clipboard paste handler
+  // Reset all state
+  const handleReset = useCallback(() => {
+    setMarkdown('');
+    setPreviewUrls([]);
+    setCurrentPage(1);
+    setTotalPages(0);
+    setLoading(false);
+    showToast(t('toolbar.resetDone'), 'info');
+  }, [showToast, t]);
+
+  // Clipboard paste
   useEffect(() => {
     const handlePaste = (e) => {
       const items = e.clipboardData?.items;
@@ -64,25 +72,17 @@ export default function App() {
 
       try {
         if (file.type === 'application/pdf') {
-          // PDF: render all pages, then OCR each
           const { pages } = await renderAllPdfPages(file);
           const urls = pages.map((p) => p.dataUrl);
           setPreviewUrls(urls);
           setTotalPages(pages.length);
           setCurrentPage(1);
 
-          // OCR all pages
           let allText = '';
           for (let i = 0; i < pages.length; i++) {
-            setOcrProgress({
-              stage: 'recognize',
-              progress: i / pages.length,
-            });
+            setOcrProgress({ stage: 'recognize', progress: i / pages.length });
             const text = await performOCR(pages[i].dataUrl, ocrLang, (p) =>
-              setOcrProgress({
-                stage: p.stage,
-                progress: (i + p.progress) / pages.length,
-              }),
+              setOcrProgress({ stage: p.stage, progress: (i + p.progress) / pages.length }),
             );
             if (text.trim()) {
               allText += (allText ? '\n\n---\n\n' : '') + text;
@@ -92,12 +92,10 @@ export default function App() {
           if (!allText.trim()) {
             showToast(t('ocr.noText'), 'error');
           } else {
-            const md = ocrTextToMarkdown(allText);
-            setMarkdown(md);
+            setMarkdown(ocrTextToMarkdown(allText));
             showToast(t('ocr.success'), 'success');
           }
         } else {
-          // Image file
           const url = URL.createObjectURL(file);
           setPreviewUrls([url]);
           setTotalPages(1);
@@ -107,27 +105,19 @@ export default function App() {
           if (!text.trim()) {
             showToast(t('ocr.noText'), 'error');
           } else {
-            const md = ocrTextToMarkdown(text);
-            setMarkdown(md);
+            setMarkdown(ocrTextToMarkdown(text));
             showToast(t('ocr.success'), 'success');
           }
         }
       } catch (err) {
         console.error('OCR error:', err);
-        const msg = file.type === 'application/pdf' ? t('ocr.pdfFail') : t('ocr.fail');
-        showToast(msg, 'error');
+        showToast(file.type === 'application/pdf' ? t('ocr.pdfFail') : t('ocr.fail'), 'error');
       } finally {
         setLoading(false);
       }
     },
     [ocrLang, showToast, t],
   );
-
-  const getProgressText = () => {
-    if (ocrProgress.stage === 'init') return t('ocr.progressInit');
-    if (ocrProgress.stage === 'recognize') return t('ocr.progressRecognize');
-    return t('ocr.processing');
-  };
 
   const hasPreview = previewUrls.length > 0;
 
@@ -136,13 +126,12 @@ export default function App() {
       <Header onHelpOpen={() => setHelpOpen(true)} />
 
       <main className={styles.container}>
-        {/* Hero */}
-        <div className={styles.hero}>
-          <p className={styles.heroTitle}>{t('app.subtitle')}</p>
-          <p className={styles.heroDesc}>{t('app.description')}</p>
-        </div>
+        {/* Subtitle - only on initial screen */}
+        {!loading && !hasPreview && (
+          <p className={styles.subtitle}>{t('app.subtitle')}</p>
+        )}
 
-        {/* Upload zone */}
+        {/* Upload zone - initial */}
         {!loading && !hasPreview && (
           <UploadZone
             onFileSelect={handleFileSelect}
@@ -156,7 +145,13 @@ export default function App() {
           <div className={styles.loadingOverlay}>
             <div className={styles.spinner} />
             <p className={styles.loadingText}>{t('ocr.processing')}</p>
-            <p className={styles.loadingSubtext}>{getProgressText()}</p>
+            <p className={styles.loadingSubtext}>
+              {ocrProgress.stage === 'init'
+                ? t('ocr.progressInit')
+                : ocrProgress.stage === 'recognize'
+                  ? t('ocr.progressRecognize')
+                  : t('ocr.processing')}
+            </p>
             <div className={styles.progressBar}>
               <div
                 className={styles.progressFill}
@@ -166,24 +161,21 @@ export default function App() {
           </div>
         )}
 
-        {/* Workspace: Preview + Editor */}
+        {/* Workspace */}
         {!loading && hasPreview && (
           <>
-            <div
-              className={`${styles.workspace} ${
-                hasPreview ? styles.workspaceSplit : styles.workspaceSingle
-              }`}
-            >
+            <div className={styles.workspace}>
               <Preview
                 previewUrls={previewUrls}
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={setCurrentPage}
+                onReset={handleReset}
               />
               <Editor value={markdown} onChange={setMarkdown} />
             </div>
 
-            {/* Actions row */}
+            {/* Actions */}
             <div className={styles.actionsRow}>
               <Toolbar
                 content={markdown}
@@ -194,11 +186,12 @@ export default function App() {
               <TtsControls content={markdown} showToast={showToast} />
             </div>
 
-            {/* Upload another file */}
+            {/* Re-upload */}
             <UploadZone
               onFileSelect={handleFileSelect}
               ocrLang={ocrLang}
               onOcrLangChange={setOcrLang}
+              compact
             />
           </>
         )}

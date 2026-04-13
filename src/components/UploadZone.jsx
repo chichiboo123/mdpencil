@@ -8,9 +8,9 @@ const ACCEPTED_TYPES = [
   'image/webp',
   'application/pdf',
 ];
-const MAX_SIZE = 20 * 1024 * 1024; // 20MB
+const MAX_SIZE = 20 * 1024 * 1024;
 
-export default function UploadZone({ onFileSelect, ocrLang, onOcrLangChange }) {
+export default function UploadZone({ onFileSelect, ocrLang, onOcrLangChange, compact }) {
   const { t } = useTranslation();
   const inputRef = useRef(null);
   const [dragActive, setDragActive] = useState(false);
@@ -18,79 +18,49 @@ export default function UploadZone({ onFileSelect, ocrLang, onOcrLangChange }) {
   const validateAndSelect = useCallback(
     (file) => {
       if (!file) return;
-      if (!ACCEPTED_TYPES.includes(file.type)) {
-        alert(t('upload.supported'));
-        return;
-      }
-      if (file.size > MAX_SIZE) {
-        alert(t('upload.maxSize'));
-        return;
-      }
+      if (!ACCEPTED_TYPES.includes(file.type)) return;
+      if (file.size > MAX_SIZE) return;
       onFileSelect(file);
     },
-    [onFileSelect, t],
+    [onFileSelect],
   );
 
   const handleDrop = useCallback(
     (e) => {
       e.preventDefault();
       setDragActive(false);
-      const file = e.dataTransfer.files?.[0];
-      validateAndSelect(file);
+      validateAndSelect(e.dataTransfer.files?.[0]);
     },
     [validateAndSelect],
   );
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setDragActive(true);
-  };
-
-  const handleDragLeave = () => setDragActive(false);
-
-  const handleChange = (e) => {
-    const file = e.target.files?.[0];
-    validateAndSelect(file);
-    e.target.value = '';
-  };
-
-  const handleClick = () => inputRef.current?.click();
-
   return (
-    <div className={styles.wrapper}>
+    <div className={`${styles.wrapper} ${compact ? styles.compact : ''}`}>
       <div
         className={`${styles.dropzone} ${dragActive ? styles.dropzoneActive : ''}`}
         onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onClick={handleClick}
+        onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+        onDragLeave={() => setDragActive(false)}
+        onClick={() => inputRef.current?.click()}
         role="button"
         tabIndex={0}
-        aria-label={t('upload.title')}
-        onKeyDown={(e) => e.key === 'Enter' && handleClick()}
+        onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.click()}
       >
         <span className={`material-icons ${styles.icon}`}>cloud_upload</span>
         <p className={styles.mainText}>{t('upload.dragDrop')}</p>
-        <p className={styles.orText}>{t('upload.or')}</p>
-        <span className={styles.browseBtn}>
-          <span className="material-icons">folder_open</span>
-          {t('upload.browse')}
-        </span>
+        <p className={styles.hint}>
+          {t('upload.supported')} · {t('upload.paste')}
+        </p>
         <input
           ref={inputRef}
           type="file"
           accept=".jpg,.jpeg,.png,.webp,.pdf"
-          onChange={handleChange}
+          onChange={(e) => { validateAndSelect(e.target.files?.[0]); e.target.value = ''; }}
           className={styles.fileInput}
         />
       </div>
-      <p className={styles.hint}>
-        {t('upload.paste')}
-        <br />
-        {t('upload.supported')} &middot; {t('upload.maxSize')}
-      </p>
       <div className={styles.ocrLangRow}>
-        <label className={styles.ocrLangLabel}>{t('ocr.langLabel')}:</label>
+        <label className={styles.ocrLangLabel}>{t('ocr.langLabel')}</label>
         <select
           className={styles.ocrLangSelect}
           value={ocrLang}

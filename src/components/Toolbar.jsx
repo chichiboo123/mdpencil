@@ -5,10 +5,7 @@ export default function Toolbar({ content, onClear, showToast }) {
   const { t } = useTranslation();
 
   const handleCopy = async () => {
-    if (!content.trim()) {
-      showToast(t('toolbar.noContent'), 'info');
-      return;
-    }
+    if (!content.trim()) { showToast(t('toolbar.noContent'), 'info'); return; }
     try {
       await navigator.clipboard.writeText(content);
       showToast(t('toolbar.copied'), 'success');
@@ -18,10 +15,7 @@ export default function Toolbar({ content, onClear, showToast }) {
   };
 
   const handleDownload = () => {
-    if (!content.trim()) {
-      showToast(t('toolbar.noContent'), 'info');
-      return;
-    }
+    if (!content.trim()) { showToast(t('toolbar.noContent'), 'info'); return; }
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -34,11 +28,6 @@ export default function Toolbar({ content, onClear, showToast }) {
     showToast(t('toolbar.downloaded'), 'success');
   };
 
-  const handleClear = () => {
-    onClear();
-    showToast(t('toolbar.cleared'), 'info');
-  };
-
   return (
     <div className={styles.toolbar}>
       <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleCopy}>
@@ -49,7 +38,7 @@ export default function Toolbar({ content, onClear, showToast }) {
         <span className="material-icons">download</span>
         {t('toolbar.download')}
       </button>
-      <button className={`${styles.btn} ${styles.btnDanger}`} onClick={handleClear}>
+      <button className={`${styles.btn} ${styles.btnDanger}`} onClick={onClear}>
         <span className="material-icons">delete_outline</span>
         {t('toolbar.clear')}
       </button>

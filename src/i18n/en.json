@@ -1,37 +1,34 @@
 {
   "app": {
     "title": "MD Pencil",
-    "subtitle": "Convert text from images and PDFs into clean Markdown documents.",
-    "description": "Upload a file or paste an image to extract text via OCR and organize it into neat Markdown. Edit, copy, download, and listen — all in one place."
+    "subtitle": "Extract text from images & PDFs into Markdown."
   },
   "upload": {
-    "title": "Upload File",
-    "dragDrop": "Drag and drop a file here",
-    "or": "or",
-    "browse": "Browse Files",
-    "paste": "You can also paste an image from clipboard (Ctrl+V)",
-    "supported": "Supported formats: JPG, PNG, WEBP, PDF",
-    "maxSize": "Max file size: 20MB"
+    "dragDrop": "Drop a file here or click to browse",
+    "paste": "Ctrl+V to paste image",
+    "supported": "JPG, PNG, WEBP, PDF · Max 20MB"
   },
   "preview": {
-    "title": "Original Preview",
+    "title": "Original",
     "page": "Page",
     "of": "/",
     "noFile": "No file uploaded."
   },
   "editor": {
     "title": "Markdown Result",
-    "placeholder": "OCR results will appear here.\nYou can also type or edit text directly."
+    "placeholder": "OCR results will appear here.\nYou can also type or edit directly."
   },
   "toolbar": {
     "copy": "Copy",
     "download": "Download",
     "clear": "Clear",
+    "reset": "Reset",
     "copied": "Copied to clipboard!",
     "downloaded": "File downloaded!",
     "cleared": "Editor cleared.",
-    "copyFail": "Copy failed. Please check your browser settings.",
-    "noContent": "Nothing to copy."
+    "resetDone": "Reset to initial state.",
+    "copyFail": "Copy failed. Check browser settings.",
+    "noContent": "No content."
   },
   "tts": {
     "play": "Read",
@@ -39,6 +36,13 @@
     "resume": "Resume",
     "stop": "Stop",
     "speed": "Speed",
+    "voice": "Voice",
+    "voiceDefault": "Default voice",
+    "record": "Record",
+    "recording": "Recording...",
+    "recordComplete": "Audio file downloaded!",
+    "recordFail": "Recording failed. Please allow tab audio sharing.",
+    "recordNotSupported": "Audio recording is not supported in this browser. Please use Chrome.",
     "noContent": "No content to read.",
     "notSupported": "Text-to-speech is not supported in this browser."
   },
@@ -47,33 +51,33 @@
     "progressInit": "Preparing OCR engine...",
     "progressRecognize": "Recognizing text...",
     "success": "Text extraction complete!",
-    "fail": "Could not extract text. Please make sure the image is clear and legible.",
-    "noText": "No text found in the image. Try a different image.",
-    "pdfFail": "Could not process the PDF file. Please make sure it is not corrupted.",
-    "langLabel": "OCR Language",
-    "langKo": "Korean",
+    "fail": "Extraction failed — make sure the image is clear.",
+    "noText": "No text found. Try a different image.",
+    "pdfFail": "Could not process this PDF. Check if the file is valid.",
+    "langLabel": "Language",
+    "langKo": "한국어",
     "langEn": "English",
-    "langJa": "Japanese"
+    "langJa": "日本語"
   },
   "help": {
-    "title": "How to Use",
+    "title": "Help",
     "close": "Close",
     "section1Title": "What is MD Pencil?",
-    "section1Body": "MD Pencil is a tool that extracts text from images or PDF files and organizes it into Markdown format. Easily convert worksheets, notices, scripts, and reading materials into digital documents.",
+    "section1Body": "A tool that extracts text from images or PDFs and organizes it into Markdown. Convert worksheets, notices, and scripts into digital documents.",
     "section2Title": "How to Use",
-    "step1": "Upload an image (JPG, PNG, WEBP) or PDF file, or paste an image from your clipboard.",
-    "step2": "OCR will automatically extract and organize the text into Markdown.",
+    "step1": "Upload an image (JPG, PNG, WEBP) or PDF, or paste with Ctrl+V.",
+    "step2": "OCR automatically extracts and formats the text.",
     "step3": "Edit the results freely.",
-    "step4": "Use the copy, download, or text-to-speech buttons to work with the results.",
+    "step4": "Copy, download, or use text-to-speech.",
     "section3Title": "What is Markdown?",
-    "section3Body": "Markdown is a simple way to format text using special characters. It's easy to learn!",
-    "mdHeading": "# creates a heading",
-    "mdSubheading": "## creates a subheading",
-    "mdList": "- creates a list item",
-    "mdBold": "**text** makes text bold",
-    "mdParagraph": "A blank line separates paragraphs",
+    "section3Body": "A simple way to format text with special characters. Easy to learn!",
+    "mdHeading": "# → Heading",
+    "mdSubheading": "## → Subheading",
+    "mdList": "- → List item",
+    "mdBold": "**text** → Bold",
+    "mdParagraph": "Blank line → Paragraph break",
     "section4Title": "Text-to-Speech (TTS)",
-    "section4Body": "Listen to the result text using your browser's speech feature. You can play, pause, stop, and adjust speed. Markdown symbols (#, -, etc.) are automatically removed for natural reading."
+    "section4Body": "Listen to results using browser speech. Play/pause/stop, speed control, and voice selection available. Markdown symbols are auto-removed."
   },
   "footer": {
     "credit": "Created by. Chisu Teacher who dreams of educational musicals"

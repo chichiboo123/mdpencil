@@ -6,6 +6,7 @@ export default function Preview({
   currentPage,
   totalPages,
   onPageChange,
+  onReset,
 }) {
   const { t } = useTranslation();
 
@@ -33,34 +34,39 @@ export default function Preview({
           <span className="material-icons">image</span>
           {t('preview.title')}
         </span>
-        {totalPages > 1 && (
-          <div className={styles.pageNav}>
-            <button
-              className={styles.pageBtn}
-              onClick={() => onPageChange(currentPage - 1)}
-              disabled={currentPage <= 1}
-              aria-label="Previous page"
-            >
-              <span className="material-icons">chevron_left</span>
+        <div className={styles.headerActions}>
+          {totalPages > 1 && (
+            <div className={styles.pageNav}>
+              <button
+                className={styles.pageBtn}
+                onClick={() => onPageChange(currentPage - 1)}
+                disabled={currentPage <= 1}
+              >
+                <span className="material-icons">chevron_left</span>
+              </button>
+              <span className={styles.pageLabel}>
+                {currentPage}{t('preview.of')}{totalPages}
+              </span>
+              <button
+                className={styles.pageBtn}
+                onClick={() => onPageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+              >
+                <span className="material-icons">chevron_right</span>
+              </button>
+            </div>
+          )}
+          {onReset && (
+            <button className={styles.resetBtn} onClick={onReset} title={t('toolbar.reset')}>
+              <span className="material-icons">restart_alt</span>
             </button>
-            <span>
-              {t('preview.page')} {currentPage}{t('preview.of')}{totalPages}
-            </span>
-            <button
-              className={styles.pageBtn}
-              onClick={() => onPageChange(currentPage + 1)}
-              disabled={currentPage >= totalPages}
-              aria-label="Next page"
-            >
-              <span className="material-icons">chevron_right</span>
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
       <div className={styles.imageContainer}>
         <img
           src={previewUrls[currentPage - 1]}
-          alt={`Preview page ${currentPage}`}
+          alt={`Page ${currentPage}`}
           className={styles.previewImage}
         />
       </div>

@@ -1,37 +1,34 @@
 {
   "app": {
     "title": "MD Pencil",
-    "subtitle": "画像やPDFの文字をMarkdown形式のデジタルテキストに変換します。",
-    "description": "ファイルをアップロードするか画像を貼り付けると、OCRでテキストを抽出し、きれいなMarkdownドキュメントに整理します。編集・コピー・ダウンロード・音声読み上げまで、すべてここで。"
+    "subtitle": "画像・PDFの文字をMarkdownに変換します。"
   },
   "upload": {
-    "title": "ファイルアップロード",
-    "dragDrop": "ファイルをここにドラッグ＆ドロップ",
-    "or": "または",
-    "browse": "ファイルを選択",
-    "paste": "クリップボードから画像の貼り付けも可能です（Ctrl+V）",
-    "supported": "対応形式：JPG, PNG, WEBP, PDF",
-    "maxSize": "最大ファイルサイズ：20MB"
+    "dragDrop": "ファイルをドロップまたはクリックして選択",
+    "paste": "Ctrl+Vで画像貼り付け可能",
+    "supported": "JPG, PNG, WEBP, PDF · 最大20MB"
   },
   "preview": {
-    "title": "原本プレビュー",
+    "title": "原本",
     "page": "ページ",
     "of": "/",
-    "noFile": "アップロードされたファイルはありません。"
+    "noFile": "ファイルがありません。"
   },
   "editor": {
     "title": "Markdown結果",
-    "placeholder": "OCRの結果がここに表示されます。\n直接テキストを入力・編集することもできます。"
+    "placeholder": "OCR結果がここに表示されます。\n直接入力・編集も可能です。"
   },
   "toolbar": {
     "copy": "コピー",
     "download": "ダウンロード",
     "clear": "クリア",
-    "copied": "クリップボードにコピーしました！",
-    "downloaded": "ファイルをダウンロードしました！",
-    "cleared": "編集内容をクリアしました。",
-    "copyFail": "コピーに失敗しました。ブラウザの設定を確認してください。",
-    "noContent": "コピーする内容がありません。"
+    "reset": "リセット",
+    "copied": "コピーしました！",
+    "downloaded": "ダウンロードしました！",
+    "cleared": "クリアしました。",
+    "resetDone": "初期状態に戻しました。",
+    "copyFail": "コピーに失敗しました。",
+    "noContent": "内容がありません。"
   },
   "tts": {
     "play": "読み上げ",
@@ -39,41 +36,48 @@
     "resume": "再開",
     "stop": "停止",
     "speed": "速度",
+    "voice": "音声",
+    "voiceDefault": "デフォルト音声",
+    "record": "録音",
+    "recording": "録音中...",
+    "recordComplete": "音声ファイルをダウンロードしました！",
+    "recordFail": "録音に失敗しました。タブ音声の共有を許可してください。",
+    "recordNotSupported": "このブラウザでは録音に対応していません。Chromeをご利用ください。",
     "noContent": "読み上げる内容がありません。",
     "notSupported": "このブラウザでは音声読み上げに対応していません。"
   },
   "ocr": {
     "processing": "OCR処理中...",
-    "progressInit": "OCRエンジンを準備しています...",
-    "progressRecognize": "テキストを認識しています...",
-    "success": "テキスト抽出が完了しました！",
-    "fail": "テキストを抽出できませんでした。画像が鮮明か確認してください。",
-    "noText": "画像からテキストが見つかりませんでした。別の画像をお試しください。",
-    "pdfFail": "PDFファイルを処理できませんでした。ファイルが破損していないか確認してください。",
-    "langLabel": "OCR認識言語",
-    "langKo": "韓国語",
-    "langEn": "英語",
+    "progressInit": "OCRエンジン準備中...",
+    "progressRecognize": "テキスト認識中...",
+    "success": "テキスト抽出完了！",
+    "fail": "抽出失敗 — 画像が鮮明か確認してください。",
+    "noText": "テキストが見つかりません。別の画像をお試しください。",
+    "pdfFail": "PDFを処理できませんでした。ファイルを確認してください。",
+    "langLabel": "認識言語",
+    "langKo": "한국어",
+    "langEn": "English",
     "langJa": "日本語"
   },
   "help": {
-    "title": "使い方ガイド",
+    "title": "使い方",
     "close": "閉じる",
     "section1Title": "MD Pencilとは？",
-    "section1Body": "MD Pencilは画像やPDFファイルからテキストを抽出し、Markdown形式に整理するツールです。学習プリント、お知らせ、台本などを簡単にデジタル文書に変換できます。",
+    "section1Body": "画像やPDFからテキストを抽出し、Markdown形式に整理するツールです。学習プリントやお知らせをデジタル文書に変換できます。",
     "section2Title": "使い方",
-    "step1": "画像（JPG, PNG, WEBP）またはPDFファイルをアップロード、もしくはクリップボードから画像を貼り付けます。",
-    "step2": "OCRが自動的にテキストを抽出し、Markdown形式に整理します。",
+    "step1": "画像（JPG, PNG, WEBP）またはPDFをアップロード、またはCtrl+Vで貼り付け。",
+    "step2": "OCRが自動でテキストを抽出・整理します。",
     "step3": "結果を自由に編集できます。",
-    "step4": "コピー、ダウンロード、音声読み上げボタンで結果を活用しましょう。",
+    "step4": "コピー、ダウンロード、音声読み上げで活用しましょう。",
     "section3Title": "Markdownとは？",
-    "section3Body": "Markdownは簡単な記号を使って文書の構造を表現する方法です。誰でも簡単に覚えられます！",
-    "mdHeading": "# で見出しになります",
-    "mdSubheading": "## で小見出しになります",
-    "mdList": "- でリスト項目になります",
-    "mdBold": "**テキスト** で太字になります",
-    "mdParagraph": "空行を入れると段落が分かれます",
-    "section4Title": "音声読み上げ（TTS）について",
-    "section4Body": "ブラウザの音声機能でテキストを読み上げます。再生、一時停止、停止、速度調節が可能です。Markdown記号（#、-など）は自動的に除去され、自然に読み上げられます。"
+    "section3Body": "簡単な記号で文書構造を表現する方法です。誰でも簡単！",
+    "mdHeading": "# → 見出し",
+    "mdSubheading": "## → 小見出し",
+    "mdList": "- → リスト項目",
+    "mdBold": "**テキスト** → 太字",
+    "mdParagraph": "空行 → 段落区切り",
+    "section4Title": "音声読み上げ（TTS）",
+    "section4Body": "ブラウザ音声で読み上げます。再生/一時停止/停止、速度調節、音声変更が可能。Markdown記号は自動除去されます。"
   },
   "footer": {
     "credit": "Created by. 教育ミュージカルを夢見るチス先生"
