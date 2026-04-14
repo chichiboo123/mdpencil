@@ -1,34 +1,33 @@
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 16px;
   flex: 1;
 }
 
 .subtitle {
   text-align: center;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--color-text-secondary);
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
-/* Loading */
 .loadingOverlay {
   background: var(--color-surface);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  padding: 32px;
+  padding: 24px;
   text-align: center;
 }
 
 .spinner {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border: 3px solid var(--color-border);
   border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-  margin: 0 auto 14px;
+  margin: 0 auto 10px;
 }
 
 @keyframes spin {
@@ -36,24 +35,24 @@
 }
 
 .loadingText {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--color-text);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .loadingSubtext {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--color-text-secondary);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .progressBar {
   width: 100%;
-  max-width: 280px;
-  height: 5px;
+  max-width: 240px;
+  height: 4px;
   background: var(--color-border);
-  border-radius: 3px;
+  border-radius: 2px;
   margin: 0 auto;
   overflow: hidden;
 }
@@ -61,39 +60,38 @@
 .progressFill {
   height: 100%;
   background: var(--color-primary);
-  border-radius: 3px;
+  border-radius: 2px;
   transition: width 0.3s ease;
 }
 
-/* Workspace */
 .workspace {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
 .actionsRow {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-  padding: 12px 16px;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 10px 12px;
   background: var(--color-surface);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
 }
 
 .separator {
   width: 1px;
-  height: 24px;
+  height: 22px;
   background: var(--color-border);
 }
 
 .toastContainer {
   position: fixed;
-  bottom: 24px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
@@ -101,14 +99,25 @@
 
 @media (max-width: 768px) {
   .container {
-    padding: 16px;
+    padding: 10px;
   }
 
   .workspace {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .actionsRow {
+    padding: 8px 10px;
+    gap: 6px;
   }
 
   .separator {
     display: none;
+  }
+
+  .subtitle {
+    margin-bottom: 10px;
+    font-size: 0.82rem;
   }
 }

@@ -8,8 +8,7 @@ export default function TtsControls({ content, showToast }) {
   const { t, i18n } = useTranslation();
   const [ttsState, setTtsState] = useState({ isSpeaking: false, isPaused: false });
   const [rate, setRate] = useState(1.0);
-  const [genderedVoices, setGenderedVoices] = useState({ female: null, male: null });
-  const [selectedGender, setSelectedGender] = useState('');
+  const [gender, setGender] = useState('');
 
   useEffect(() => {
     ttsController.onStateChange = setTtsState;
@@ -18,19 +17,6 @@ export default function TtsControls({ content, showToast }) {
       ttsController.onStateChange = null;
     };
   }, []);
-
-  // 언어 변경 시 음성 목록 갱신
-  useEffect(() => {
-    const loadVoices = () => {
-      const voices = ttsController.getGenderedVoices(i18n.language);
-      setGenderedVoices(voices);
-      setSelectedGender('');
-      ttsController.setVoice(null);
-    };
-    loadVoices();
-    window.speechSynthesis?.addEventListener?.('voiceschanged', loadVoices);
-    return () => window.speechSynthesis?.removeEventListener?.('voiceschanged', loadVoices);
-  }, [i18n.language]);
 
   const handlePlay = useCallback(() => {
     if (!ttsController.supported) {
@@ -43,26 +29,18 @@ export default function TtsControls({ content, showToast }) {
       return;
     }
     ttsController.setRate(rate);
+    ttsController.setGender(gender);
     ttsController.play(text, i18n.language);
-  }, [content, rate, i18n.language, showToast, t]);
+  }, [content, rate, gender, i18n.language, showToast, t]);
 
   const handleGenderChange = (e) => {
-    const gender = e.target.value;
-    setSelectedGender(gender);
-    if (gender === 'female') {
-      ttsController.setVoice(genderedVoices.female);
-    } else if (gender === 'male') {
-      ttsController.setVoice(genderedVoices.male);
-    } else {
-      ttsController.setVoice(null);
-    }
+    const g = e.target.value;
+    setGender(g);
+    ttsController.setGender(g);
   };
-
-  const hasVoiceOptions = genderedVoices.female || genderedVoices.male;
 
   return (
     <div className={styles.ttsRow}>
-      {/* Play / Pause / Stop */}
       {!ttsState.isSpeaking ? (
         <button className={`${styles.btn} ${styles.btnPlay}`} onClick={handlePlay}>
           <span className="material-icons">play_arrow</span>
@@ -89,23 +67,17 @@ export default function TtsControls({ content, showToast }) {
         </>
       )}
 
-      {/* Voice: Female / Male */}
-      {hasVoiceOptions && (
-        <select
-          className={styles.voiceSelect}
-          value={selectedGender}
-          onChange={handleGenderChange}
-          aria-label={t('tts.voice')}
-        >
-          <option value="">{t('tts.voiceDefault')}</option>
-          {genderedVoices.female && (
-            <option value="female">{t('tts.voiceFemale')}</option>
-          )}
-          {genderedVoices.male && (
-            <option value="male">{t('tts.voiceMale')}</option>
-          )}
-        </select>
-      )}
+      {/* 여성 / 남성 - 항상 표시 */}
+      <select
+        className={styles.voiceSelect}
+        value={gender}
+        onChange={handleGenderChange}
+        aria-label={t('tts.voice')}
+      >
+        <option value="">{t('tts.voiceDefault')}</option>
+        <option value="female">{t('tts.voiceFemale')}</option>
+        <option value="male">{t('tts.voiceMale')}</option>
+      </select>
 
       {/* Speed */}
       <div className={styles.speedControl}>

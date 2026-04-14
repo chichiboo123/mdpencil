@@ -8,7 +8,7 @@ import Toolbar from './components/Toolbar';
 import TtsControls from './components/TtsControls';
 import HelpModal from './components/HelpModal';
 import Footer from './components/Footer';
-import { performOCR } from './utils/ocr';
+import { performOCR, isValidOcrResult } from './utils/ocr';
 import { renderAllPdfPages } from './utils/pdf';
 import { ocrTextToMarkdown } from './utils/markdown';
 import styles from './App.module.css';
@@ -25,7 +25,6 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [ocrProgress, setOcrProgress] = useState({ stage: '', progress: 0 });
 
-  // Toast
   const [toast, setToast] = useState({ message: '', type: '', visible: false });
   const toastTimer = useRef(null);
 
@@ -37,7 +36,6 @@ export default function App() {
     }, 2500);
   }, []);
 
-  // Reset all state
   const handleReset = useCallback(() => {
     setMarkdown('');
     setPreviewUrls([]);
@@ -47,7 +45,6 @@ export default function App() {
     showToast(t('toolbar.resetDone'), 'info');
   }, [showToast, t]);
 
-  // Clipboard paste
   useEffect(() => {
     const handlePaste = (e) => {
       const items = e.clipboardData?.items;
@@ -81,16 +78,16 @@ export default function App() {
           let allText = '';
           for (let i = 0; i < pages.length; i++) {
             setOcrProgress({ stage: 'recognize', progress: i / pages.length });
-            const text = await performOCR(pages[i].dataUrl, ocrLang, (p) =>
+            const { text, confidence } = await performOCR(pages[i].dataUrl, ocrLang, (p) =>
               setOcrProgress({ stage: p.stage, progress: (i + p.progress) / pages.length }),
             );
-            if (text.trim()) {
+            if (isValidOcrResult(text, confidence)) {
               allText += (allText ? '\n\n---\n\n' : '') + text;
             }
           }
 
           if (!allText.trim()) {
-            showToast(t('ocr.noText'), 'error');
+            showToast(t('ocr.noText'), 'info');
           } else {
             setMarkdown(ocrTextToMarkdown(allText));
             showToast(t('ocr.success'), 'success');
@@ -101,9 +98,9 @@ export default function App() {
           setTotalPages(1);
           setCurrentPage(1);
 
-          const text = await performOCR(file, ocrLang, setOcrProgress);
-          if (!text.trim()) {
-            showToast(t('ocr.noText'), 'error');
+          const { text, confidence } = await performOCR(file, ocrLang, setOcrProgress);
+          if (!isValidOcrResult(text, confidence)) {
+            showToast(t('ocr.noText'), 'info');
           } else {
             setMarkdown(ocrTextToMarkdown(text));
             showToast(t('ocr.success'), 'success');
@@ -126,12 +123,10 @@ export default function App() {
       <Header onHelpOpen={() => setHelpOpen(true)} />
 
       <main className={styles.container}>
-        {/* Subtitle - only on initial screen */}
         {!loading && !hasPreview && (
           <p className={styles.subtitle}>{t('app.subtitle')}</p>
         )}
 
-        {/* Upload zone - initial */}
         {!loading && !hasPreview && (
           <UploadZone
             onFileSelect={handleFileSelect}
@@ -140,7 +135,6 @@ export default function App() {
           />
         )}
 
-        {/* Loading */}
         {loading && (
           <div className={styles.loadingOverlay}>
             <div className={styles.spinner} />
@@ -161,7 +155,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Workspace */}
         {!loading && hasPreview && (
           <>
             <div className={styles.workspace}>
@@ -175,7 +168,6 @@ export default function App() {
               <Editor value={markdown} onChange={setMarkdown} />
             </div>
 
-            {/* Actions */}
             <div className={styles.actionsRow}>
               <Toolbar
                 content={markdown}
@@ -186,7 +178,6 @@ export default function App() {
               <TtsControls content={markdown} showToast={showToast} />
             </div>
 
-            {/* Re-upload */}
             <UploadZone
               onFileSelect={handleFileSelect}
               ocrLang={ocrLang}
@@ -200,7 +191,6 @@ export default function App() {
       <Footer />
       <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
 
-      {/* Toast */}
       <div className={styles.toastContainer}>
         <div className={`toast ${toast.type} ${toast.visible ? 'visible' : ''}`}>
           {toast.message}
