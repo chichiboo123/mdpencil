@@ -23,8 +23,9 @@
 }
 
 .title {
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 400;
   color: var(--color-text);
 }
 
@@ -75,6 +76,6 @@
   }
 
   .title {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
 }

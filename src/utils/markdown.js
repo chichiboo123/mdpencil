@@ -84,6 +84,128 @@ export function ocrTextToMarkdown(raw) {
 }
 
 /**
+ * Markdown → HTML 렌더링. 간단한 Markdown 문법을 HTML로 변환한다.
+ */
+export function markdownToHtml(md) {
+  if (!md) return '';
+
+  // 코드 블록 보호 (```...```)
+  const codeBlocks = [];
+  let html = md.replace(/```([\s\S]*?)```/g, (_, code) => {
+    codeBlocks.push(code.trim());
+    return `%%CODEBLOCK_${codeBlocks.length - 1}%%`;
+  });
+
+  // 인라인 코드 보호
+  const inlineCodes = [];
+  html = html.replace(/`([^`]+)`/g, (_, code) => {
+    inlineCodes.push(code);
+    return `%%INLINE_${inlineCodes.length - 1}%%`;
+  });
+
+  // 줄 단위 처리
+  const lines = html.split('\n');
+  const output = [];
+  let inList = false;
+  let listType = '';
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+
+    // 코드블록 복원
+    const cbMatch = line.match(/^%%CODEBLOCK_(\d+)%%$/);
+    if (cbMatch) {
+      if (inList) { output.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+      output.push(`<pre><code>${escapeHtml(codeBlocks[parseInt(cbMatch[1])])}</code></pre>`);
+      continue;
+    }
+
+    // 수평선
+    if (/^---+$/.test(line.trim())) {
+      if (inList) { output.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+      output.push('<hr/>');
+      continue;
+    }
+
+    // 제목
+    const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
+    if (headingMatch) {
+      if (inList) { output.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+      const level = headingMatch[1].length;
+      output.push(`<h${level}>${inlineFormat(headingMatch[2])}</h${level}>`);
+      continue;
+    }
+
+    // 비순서 목록
+    const ulMatch = line.match(/^[-*+]\s+(.+)$/);
+    if (ulMatch) {
+      if (!inList || listType !== 'ul') {
+        if (inList) output.push(listType === 'ul' ? '</ul>' : '</ol>');
+        output.push('<ul>');
+        inList = true;
+        listType = 'ul';
+      }
+      output.push(`<li>${inlineFormat(ulMatch[1])}</li>`);
+      continue;
+    }
+
+    // 순서 목록
+    const olMatch = line.match(/^\d+[.)]\s+(.+)$/);
+    if (olMatch) {
+      if (!inList || listType !== 'ol') {
+        if (inList) output.push(listType === 'ul' ? '</ul>' : '</ol>');
+        output.push('<ol>');
+        inList = true;
+        listType = 'ol';
+      }
+      output.push(`<li>${inlineFormat(olMatch[1])}</li>`);
+      continue;
+    }
+
+    // 빈 줄
+    if (line.trim() === '') {
+      if (inList) { output.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+      continue;
+    }
+
+    // 일반 텍스트 → 단락
+    if (inList) { output.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+    output.push(`<p>${inlineFormat(line)}</p>`);
+  }
+
+  if (inList) output.push(listType === 'ul' ? '</ul>' : '</ol>');
+
+  let result = output.join('\n');
+
+  // 인라인 코드 복원
+  result = result.replace(/%%INLINE_(\d+)%%/g, (_, idx) =>
+    `<code>${escapeHtml(inlineCodes[parseInt(idx)])}</code>`
+  );
+
+  return result;
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function inlineFormat(text) {
+  let s = escapeHtml(text);
+  // 볼드
+  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/__(.+?)__/g, '<strong>$1</strong>');
+  // 이탤릭
+  s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  s = s.replace(/_(.+?)_/g, '<em>$1</em>');
+  // 인라인 코드 플레이스홀더는 그대로 유지
+  return s;
+}
+
+/**
  * Markdown → TTS용 평문. 문법 기호를 제거한다.
  */
 export function markdownToReadableText(md) {

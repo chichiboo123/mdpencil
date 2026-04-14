@@ -8,7 +8,6 @@ export default function TtsControls({ content, showToast }) {
   const { t, i18n } = useTranslation();
   const [ttsState, setTtsState] = useState({ isSpeaking: false, isPaused: false });
   const [rate, setRate] = useState(1.0);
-  const [gender, setGender] = useState('');
 
   useEffect(() => {
     ttsController.onStateChange = setTtsState;
@@ -29,15 +28,8 @@ export default function TtsControls({ content, showToast }) {
       return;
     }
     ttsController.setRate(rate);
-    ttsController.setGender(gender);
     ttsController.play(text, i18n.language);
-  }, [content, rate, gender, i18n.language, showToast, t]);
-
-  const handleGenderChange = (e) => {
-    const g = e.target.value;
-    setGender(g);
-    ttsController.setGender(g);
-  };
+  }, [content, rate, i18n.language, showToast, t]);
 
   return (
     <div className={styles.ttsRow}>
@@ -66,18 +58,6 @@ export default function TtsControls({ content, showToast }) {
           </button>
         </>
       )}
-
-      {/* 여성 / 남성 - 항상 표시 */}
-      <select
-        className={styles.voiceSelect}
-        value={gender}
-        onChange={handleGenderChange}
-        aria-label={t('tts.voice')}
-      >
-        <option value="">{t('tts.voiceDefault')}</option>
-        <option value="female">{t('tts.voiceFemale')}</option>
-        <option value="male">{t('tts.voiceMale')}</option>
-      </select>
 
       {/* Speed */}
       <div className={styles.speedControl}>

@@ -25,6 +25,39 @@
   color: var(--color-text);
 }
 
+.tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: calc(var(--radius-sm) - 1px);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tab:hover {
+  color: var(--color-text);
+}
+
+.tabActive {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
 .textarea {
   flex: 1;
   width: 100%;
@@ -45,8 +78,111 @@
   opacity: 0.6;
 }
 
+.preview {
+  flex: 1;
+  min-height: 240px;
+  padding: 14px 16px;
+  overflow: auto;
+  font-family: 'Pretendard GOV Variable', 'Pretendard GOV', sans-serif;
+  font-size: 0.88rem;
+  line-height: 1.75;
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+.preview h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.preview h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 16px 0 8px 0;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.preview h3 {
+  font-size: 1.02rem;
+  font-weight: 700;
+  margin: 12px 0 6px 0;
+  color: var(--color-text);
+}
+
+.preview h4, .preview h5, .preview h6 {
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin: 10px 0 4px 0;
+  color: var(--color-text);
+}
+
+.preview p {
+  margin: 0 0 10px 0;
+}
+
+.preview ul, .preview ol {
+  margin: 4px 0 10px 0;
+  padding-left: 22px;
+}
+
+.preview li {
+  margin-bottom: 3px;
+}
+
+.preview strong {
+  font-weight: 700;
+}
+
+.preview em {
+  font-style: italic;
+}
+
+.preview code {
+  background: var(--color-bg);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.84rem;
+  color: var(--color-primary-dark);
+}
+
+.preview pre {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin: 6px 0 12px 0;
+  overflow-x: auto;
+}
+
+.preview pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.82rem;
+}
+
+.preview hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 14px 0;
+}
+
+.emptyPreview {
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
 @media (min-width: 768px) {
   .textarea {
+    min-height: 360px;
+  }
+  .preview {
     min-height: 360px;
   }
 }

@@ -16,6 +16,8 @@
   },
   "editor": {
     "title": "Markdown 결과",
+    "tabEdit": "편집",
+    "tabPreview": "미리보기",
     "placeholder": "OCR 결과가 여기에 표시됩니다.\n직접 입력하거나 편집할 수도 있습니다."
   },
   "toolbar": {
@@ -37,9 +39,6 @@
     "stop": "정지",
     "speed": "속도",
     "voice": "음성",
-    "voiceDefault": "기본 음성",
-    "voiceFemale": "여성",
-    "voiceMale": "남성",
     "noContent": "읽을 내용이 없습니다.",
     "notSupported": "이 브라우저에서는 음성 읽기가 지원되지 않습니다."
   },
@@ -74,7 +73,7 @@
     "mdBold": "**텍스트** → 굵게",
     "mdParagraph": "빈 줄 → 문단 구분",
     "section4Title": "음성 읽기(TTS)",
-    "section4Body": "결과를 브라우저 음성으로 읽어줍니다. 재생/일시정지/정지와 속도 조절, 음성 변경이 가능합니다. Markdown 기호는 자동 제거됩니다."
+    "section4Body": "결과를 브라우저 음성으로 읽어줍니다. 재생/일시정지/정지와 속도 조절이 가능합니다. Markdown 기호는 자동 제거됩니다."
   },
   "footer": {
     "credit": "Created by. 교육뮤지컬 꿈꾸는 치수쌤"

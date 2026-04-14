@@ -124,39 +124,40 @@ export default function App() {
 
       <main className={styles.container}>
         {!loading && !hasPreview && (
-          <p className={styles.subtitle}>{t('app.subtitle')}</p>
-        )}
-
-        {!loading && !hasPreview && (
-          <UploadZone
-            onFileSelect={handleFileSelect}
-            ocrLang={ocrLang}
-            onOcrLangChange={setOcrLang}
-          />
+          <div className={styles.initialScreen}>
+            <p className={styles.subtitle}>{t('app.subtitle')}</p>
+            <UploadZone
+              onFileSelect={handleFileSelect}
+              ocrLang={ocrLang}
+              onOcrLangChange={setOcrLang}
+            />
+          </div>
         )}
 
         {loading && (
-          <div className={styles.loadingOverlay}>
-            <div className={styles.spinner} />
-            <p className={styles.loadingText}>{t('ocr.processing')}</p>
-            <p className={styles.loadingSubtext}>
-              {ocrProgress.stage === 'init'
-                ? t('ocr.progressInit')
-                : ocrProgress.stage === 'recognize'
-                  ? t('ocr.progressRecognize')
-                  : t('ocr.processing')}
-            </p>
-            <div className={styles.progressBar}>
-              <div
-                className={styles.progressFill}
-                style={{ width: `${Math.round(ocrProgress.progress * 100)}%` }}
-              />
+          <div className={styles.initialScreen}>
+            <div className={styles.loadingOverlay}>
+              <div className={styles.spinner} />
+              <p className={styles.loadingText}>{t('ocr.processing')}</p>
+              <p className={styles.loadingSubtext}>
+                {ocrProgress.stage === 'init'
+                  ? t('ocr.progressInit')
+                  : ocrProgress.stage === 'recognize'
+                    ? t('ocr.progressRecognize')
+                    : t('ocr.processing')}
+              </p>
+              <div className={styles.progressBar}>
+                <div
+                  className={styles.progressFill}
+                  style={{ width: `${Math.round(ocrProgress.progress * 100)}%` }}
+                />
+              </div>
             </div>
           </div>
         )}
 
         {!loading && hasPreview && (
-          <>
+          <div className={styles.workspaceScreen}>
             <div className={styles.workspace}>
               <Preview
                 previewUrls={previewUrls}
@@ -184,7 +185,7 @@ export default function App() {
               onOcrLangChange={setOcrLang}
               compact
             />
-          </>
+          </div>
         )}
       </main>
 

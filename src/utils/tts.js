@@ -6,16 +6,11 @@ class TtsController {
     this.isPaused = false;
     this.isSpeaking = false;
     this.rate = 1.0;
-    this.gender = ''; // '', 'female', 'male'
     this.onStateChange = null;
   }
 
   get supported() {
     return 'speechSynthesis' in window;
-  }
-
-  setGender(gender) {
-    this.gender = gender || '';
   }
 
   play(text, lang = 'ko') {
@@ -27,15 +22,7 @@ class TtsController {
     this.utterance = new SpeechSynthesisUtterance(text);
     this.utterance.lang = locale;
     this.utterance.rate = this.rate;
-
-    // pitch로 여성/남성 구분 (음성이 1개뿐인 기기에서도 동작)
-    if (this.gender === 'female') {
-      this.utterance.pitch = 1.2;
-    } else if (this.gender === 'male') {
-      this.utterance.pitch = 0.7;
-    } else {
-      this.utterance.pitch = 1.0;
-    }
+    this.utterance.pitch = 1.0;
 
     // 해당 언어의 음성이 있으면 첫 번째 것을 사용
     const voices = window.speechSynthesis.getVoices();

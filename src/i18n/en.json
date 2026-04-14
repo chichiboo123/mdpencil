@@ -16,6 +16,8 @@
   },
   "editor": {
     "title": "Markdown Result",
+    "tabEdit": "Edit",
+    "tabPreview": "Preview",
     "placeholder": "OCR results will appear here.\nYou can also type or edit directly."
   },
   "toolbar": {
@@ -37,9 +39,6 @@
     "stop": "Stop",
     "speed": "Speed",
     "voice": "Voice",
-    "voiceDefault": "Default",
-    "voiceFemale": "Female",
-    "voiceMale": "Male",
     "noContent": "No content to read.",
     "notSupported": "Text-to-speech is not supported in this browser."
   },
@@ -74,7 +73,7 @@
     "mdBold": "**text** → Bold",
     "mdParagraph": "Blank line → Paragraph break",
     "section4Title": "Text-to-Speech (TTS)",
-    "section4Body": "Listen to results using browser speech. Play/pause/stop, speed control, and voice selection available. Markdown symbols are auto-removed."
+    "section4Body": "Listen to results using browser speech. Play/pause/stop and speed control available. Markdown symbols are auto-removed."
   },
   "footer": {
     "credit": "Created by. Chisu Teacher who dreams of educational musicals"
