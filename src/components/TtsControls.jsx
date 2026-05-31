@@ -4,7 +4,7 @@ import { ttsController } from '../utils/tts';
 import { markdownToReadableText } from '../utils/markdown';
 import styles from './TtsControls.module.css';
 
-export default function TtsControls({ content, showToast }) {
+export default function TtsControls({ content, showToast, ttsLang }) {
   const { t, i18n } = useTranslation();
   const [ttsState, setTtsState] = useState({ isSpeaking: false, isPaused: false });
   const [rate, setRate] = useState(1.0);
@@ -28,8 +28,9 @@ export default function TtsControls({ content, showToast }) {
       return;
     }
     ttsController.setRate(rate);
-    ttsController.play(text, i18n.language);
-  }, [content, rate, i18n.language, showToast, t]);
+    // 읽을 언어는 인식 언어(ttsLang) 우선, 없으면 UI 언어
+    ttsController.play(text, ttsLang || i18n.language);
+  }, [content, rate, ttsLang, i18n.language, showToast, t]);
 
   return (
     <div className={styles.ttsRow}>
@@ -45,6 +46,8 @@ export default function TtsControls({ content, showToast }) {
             onClick={() =>
               ttsState.isPaused ? ttsController.resume() : ttsController.pause()
             }
+            aria-label={ttsState.isPaused ? t('tts.resume') : t('tts.pause')}
+            title={ttsState.isPaused ? t('tts.resume') : t('tts.pause')}
           >
             <span className="material-icons">
               {ttsState.isPaused ? 'play_arrow' : 'pause'}
@@ -53,6 +56,8 @@ export default function TtsControls({ content, showToast }) {
           <button
             className={`${styles.btn} ${styles.btnStop}`}
             onClick={() => ttsController.stop()}
+            aria-label={t('tts.stop')}
+            title={t('tts.stop')}
           >
             <span className="material-icons">stop</span>
           </button>

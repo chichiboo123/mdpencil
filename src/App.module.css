@@ -76,6 +76,27 @@
   transition: width 0.3s ease;
 }
 
+.cancelBtn {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.cancelBtn:hover {
+  border-color: var(--color-error);
+  color: var(--color-error);
+  background: #fff5f5;
+}
+
 .workspaceScreen {
   flex: 1;
   display: flex;

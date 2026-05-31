@@ -16,11 +16,12 @@ export default function Toolbar({ content, onClear, showToast }) {
 
   const handleDownload = () => {
     if (!content.trim()) { showToast(t('toolbar.noContent'), 'info'); return; }
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);
+    const stamp = new Date().toISOString().slice(0, 10);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'mdpencil-result.txt';
+    a.download = `mdpencil-${stamp}.md`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

@@ -10,24 +10,32 @@ const ACCEPTED_TYPES = [
 ];
 const MAX_SIZE = 20 * 1024 * 1024;
 
-export default function UploadZone({ onFileSelect, ocrLang, onOcrLangChange, compact }) {
+export default function UploadZone({ onFileSelect, ocrLang, onOcrLangChange, compact, showToast }) {
   const { t } = useTranslation();
   const inputRef = useRef(null);
+  const dragDepth = useRef(0);
   const [dragActive, setDragActive] = useState(false);
 
   const validateAndSelect = useCallback(
     (file) => {
       if (!file) return;
-      if (!ACCEPTED_TYPES.includes(file.type)) return;
-      if (file.size > MAX_SIZE) return;
+      if (!ACCEPTED_TYPES.includes(file.type)) {
+        showToast?.(t('upload.invalidType'), 'error');
+        return;
+      }
+      if (file.size > MAX_SIZE) {
+        showToast?.(t('upload.tooLarge'), 'error');
+        return;
+      }
       onFileSelect(file);
     },
-    [onFileSelect],
+    [onFileSelect, showToast, t],
   );
 
   const handleDrop = useCallback(
     (e) => {
       e.preventDefault();
+      dragDepth.current = 0;
       setDragActive(false);
       validateAndSelect(e.dataTransfer.files?.[0]);
     },
@@ -39,12 +47,19 @@ export default function UploadZone({ onFileSelect, ocrLang, onOcrLangChange, com
       <div
         className={`${styles.dropzone} ${dragActive ? styles.dropzoneActive : ''}`}
         onDrop={handleDrop}
-        onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
-        onDragLeave={() => setDragActive(false)}
+        onDragOver={(e) => e.preventDefault()}
+        onDragEnter={(e) => { e.preventDefault(); dragDepth.current += 1; setDragActive(true); }}
+        onDragLeave={() => { dragDepth.current -= 1; if (dragDepth.current <= 0) setDragActive(false); }}
         onClick={() => inputRef.current?.click()}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.click()}
+        aria-label={t('upload.dragDrop')}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
       >
         <span className={`material-icons ${styles.icon}`}>cloud_upload</span>
         <p className={styles.mainText}>{t('upload.dragDrop')}</p>

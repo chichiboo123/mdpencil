@@ -178,6 +178,18 @@
   opacity: 0.6;
 }
 
+.countBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 4px 12px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg);
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+}
+
 @media (min-width: 768px) {
   .textarea {
     min-height: 360px;
