@@ -6,20 +6,30 @@ const LANG_MAP = {
   ja: 'jpn',
 };
 
+// 단어 단위 신뢰도 임계값. 이보다 낮은 단어는 노이즈로 간주하고 버린다.
+// (사진·아이콘·UI 요소에서 나온 잘못된 인식은 신뢰도가 낮다)
+const MIN_WORD_CONFIDENCE = 60;
+// 줄 평균 신뢰도가 이보다 낮으면 줄 전체를 버린다.
+const MIN_LINE_CONFIDENCE = 45;
+
 /**
- * 이미지를 Canvas에 로드하여 전처리한다.
+ * 이미지를 Canvas에 로드하여 가볍게 전처리한다.
  * - 그레이스케일 변환
- * - 대비(contrast) 강화
- * - 이진화(binarization)
+ * - 대비(contrast) 정규화
  * - 작은 이미지 확대
+ *
+ * ⚠️ 하드 이진화(binarization)는 의도적으로 하지 않는다.
+ * 스크린샷·사진이 포함된 이미지에서 전역 이진화는 사진/아이콘을
+ * 노이즈로 만들어 OCR 품질을 떨어뜨린다. 이진화는 Tesseract 내부의
+ * 적응형(Leptonica) 처리에 맡긴다.
  */
 function preprocessImage(imageSource) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
-      // 작은 이미지는 2배 확대
-      const scale = Math.max(1, Math.min(3, 1500 / Math.max(img.width, img.height)));
+      // 작은 이미지는 확대(최대 3배, 최대 변 ~2000px)하여 인식률을 높인다.
+      const scale = Math.max(1, Math.min(3, 2000 / Math.max(img.width, img.height)));
       const w = Math.round(img.width * scale);
       const h = Math.round(img.height * scale);
 
@@ -28,7 +38,6 @@ function preprocessImage(imageSource) {
       canvas.height = h;
       const ctx = canvas.getContext('2d');
 
-      // 고품질 보간
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(img, 0, 0, w, h);
@@ -44,7 +53,7 @@ function preprocessImage(imageSource) {
         data[i + 2] = gray;
       }
 
-      // 2) 대비 강화 (contrast stretch)
+      // 2) 대비 정규화 (contrast stretch) — 텍스트 가독성만 살짝 끌어올린다.
       let min = 255, max = 0;
       for (let i = 0; i < data.length; i += 4) {
         if (data[i] < min) min = data[i];
@@ -56,38 +65,6 @@ function preprocessImage(imageSource) {
         data[i] = stretched;
         data[i + 1] = stretched;
         data[i + 2] = stretched;
-      }
-
-      // 3) 적응형 이진화 (Otsu's method 간이 구현)
-      const histogram = new Array(256).fill(0);
-      for (let i = 0; i < data.length; i += 4) {
-        histogram[Math.round(data[i])]++;
-      }
-      const totalPixels = data.length / 4;
-      let sum = 0;
-      for (let i = 0; i < 256; i++) sum += i * histogram[i];
-
-      let sumB = 0, wB = 0, maxVariance = 0, threshold = 128;
-      for (let t = 0; t < 256; t++) {
-        wB += histogram[t];
-        if (wB === 0) continue;
-        const wF = totalPixels - wB;
-        if (wF === 0) break;
-        sumB += t * histogram[t];
-        const mB = sumB / wB;
-        const mF = (sum - sumB) / wF;
-        const variance = wB * wF * (mB - mF) * (mB - mF);
-        if (variance > maxVariance) {
-          maxVariance = variance;
-          threshold = t;
-        }
-      }
-
-      for (let i = 0; i < data.length; i += 4) {
-        const val = data[i] > threshold ? 255 : 0;
-        data[i] = val;
-        data[i + 1] = val;
-        data[i + 2] = val;
       }
 
       ctx.putImageData(imageData, 0, 0);
@@ -104,13 +81,50 @@ function preprocessImage(imageSource) {
 }
 
 /**
+ * Tesseract 결과(blocks)에서 신뢰도가 높은 텍스트만 재구성한다.
+ * 단락(paragraph) 구조를 보존하여 빈 줄로 구분하고,
+ * 저신뢰 단어/줄은 버려 사진·아이콘 노이즈를 제거한다.
+ */
+function reconstructText(blocks) {
+  if (!Array.isArray(blocks) || blocks.length === 0) return null;
+
+  const paragraphs = [];
+
+  for (const block of blocks) {
+    for (const para of block.paragraphs || []) {
+      const paraLines = [];
+
+      for (const line of para.lines || []) {
+        const words = line.words || [];
+        // 신뢰도 높은 단어만 유지
+        const goodWords = words
+          .filter((wd) => (wd.confidence ?? 0) >= MIN_WORD_CONFIDENCE)
+          .map((wd) => (wd.text || '').trim())
+          .filter(Boolean);
+
+        if (goodWords.length === 0) continue;
+        // 줄 자체의 평균 신뢰도가 너무 낮으면 통째로 버린다.
+        if ((line.confidence ?? 0) < MIN_LINE_CONFIDENCE) continue;
+
+        paraLines.push(goodWords.join(' '));
+      }
+
+      if (paraLines.length > 0) {
+        paragraphs.push(paraLines.join('\n'));
+      }
+    }
+  }
+
+  return paragraphs.join('\n\n');
+}
+
+/**
  * OCR 수행 후 텍스트와 신뢰도를 반환한다.
- * 이미지 전처리 → Tesseract 최적 파라미터로 인식.
+ * 이미지 전처리 → Tesseract 인식 → 신뢰도 기반 노이즈 제거.
  */
 export async function performOCR(imageSource, ocrLang = 'ko', onProgress) {
   const lang = LANG_MAP[ocrLang] || 'kor';
 
-  // 이미지 전처리
   if (onProgress) onProgress({ stage: 'init', progress: 0 });
   const processedImage = await preprocessImage(imageSource);
 
@@ -127,14 +141,20 @@ export async function performOCR(imageSource, ocrLang = 'ko', onProgress) {
   });
 
   try {
-    // Tesseract 파라미터 최적화
     await worker.setParameters({
-      tessedit_pageseg_mode: '6',        // 단일 균일 텍스트 블록
-      preserve_interword_spaces: '1',     // 단어 간 공백 보존
+      // PSM 3: 자동 페이지 레이아웃 분석. 다중 영역(텍스트+사진)을 구분하고
+      // 비텍스트 영역을 건너뛰어 스크린샷·복합 문서에 강하다.
+      tessedit_pageseg_mode: '3',
+      preserve_interword_spaces: '1',
     });
 
     const { data } = await worker.recognize(processedImage);
-    return { text: data.text, confidence: data.confidence };
+
+    // 신뢰도 기반 재구성. 실패 시 원본 텍스트로 폴백.
+    const reconstructed = reconstructText(data.blocks);
+    const text = reconstructed && reconstructed.trim() ? reconstructed : data.text;
+
+    return { text, confidence: data.confidence };
   } finally {
     await worker.terminate();
   }
