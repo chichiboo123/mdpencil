@@ -1,4 +1,34 @@
 /**
+ * 한 줄이 OCR 노이즈(사진·아이콘·UI에서 잘못 인식된 쓰레기)인지 판별한다.
+ * 신뢰도 필터를 통과한 잔여 노이즈를 보수적으로 제거한다.
+ * 정상 문장은 글자 비율이 높아 영향을 받지 않는다.
+ */
+function isNoiseLine(s) {
+  const t = s.trim();
+  if (!t) return false;
+
+  const len = [...t].length;
+  const letters = (t.match(/[A-Za-z가-힣ぁ-んァ-ヶ一-龥]/g) || []).length;
+  const letterRatio = len > 0 ? letters / len : 0;
+  // 정상 텍스트엔 거의 없는 기호들 (역슬래시·파이프·물결·괄호류 등)
+  const weird = (t.match(/[\\|~`^<>{}[\]_]/g) || []).length;
+  // 6자리 이상 연속 숫자 (정상 문서의 연도·가격엔 드묾)
+  const hasLongDigitRun = /\d{6,}/.test(t);
+  // 숫자와 글자가 직접 붙은 토큰 (예: "1005나", "839이") — 전형적 OCR 노이즈
+  const hasDigitLetterGlue = /[가-힣A-Za-z]\d{3,}|\d{3,}[가-힣A-Za-z]/.test(t);
+
+  // 보수적 규칙만 사용한다. 정상 본문(날짜·수식·가격 포함)을 지우지 않기 위해
+  // "거의 확실한" 노이즈 신호에만 반응한다. 1차 필터는 OCR 단계의 신뢰도 검사다.
+  if (t.includes('\\')) return true;                       // 역슬래시
+  if (weird >= 2) return true;                             // 기호 군집
+  if (letters === 0 && len >= 4) return true;              // 글자 없는 숫자·기호 덩어리
+  if (hasLongDigitRun && letterRatio < 0.6) return true;   // 긴 숫자열 + 글자 희박
+  if (hasDigitLetterGlue && letterRatio < 0.5) return true; // 숫자-글자 접합 + 글자 희박
+
+  return false;
+}
+
+/**
  * OCR 원본 텍스트를 정리하고 Markdown 구조로 변환한다.
  */
 export function ocrTextToMarkdown(raw) {
@@ -22,10 +52,11 @@ export function ocrTextToMarkdown(raw) {
   // 연속 공백 → 하나
   text = text.replace(/[^\S\n]{2,}/g, ' ');
 
-  // 각 줄 trim
+  // 각 줄 trim + 노이즈 줄 제거
   text = text
     .split('\n')
     .map((l) => l.trim())
+    .filter((l) => !isNoiseLine(l))
     .join('\n');
 
   // 3+ 빈 줄 → 2줄
@@ -58,6 +89,8 @@ export function ocrTextToMarkdown(raw) {
     // 제목 후보: 짧은 줄 + 문장종결 없음 + 숫자만은 제외
     const isShort = line.length <= 20 && !/[.。!?？,，;；:]$/.test(line);
     const isJustNumber = /^\d+$/.test(line);
+    // 데이터성 줄(키:값, 날짜, 분수 등)은 제목으로 보지 않는다.
+    const looksLikeData = /[:：]/.test(line) || /\d{4}/.test(line) || /\d+\s*[-/.]\s*\d+/.test(line);
     const prevLine = i > 0 ? lines[i - 1].trim() : '';
     const nextLine = i < lines.length - 1 ? lines[i + 1].trim() : '';
     const afterEmpty = prevLine === '' || i === 0;
@@ -65,6 +98,7 @@ export function ocrTextToMarkdown(raw) {
     if (
       isShort &&
       !isJustNumber &&
+      !looksLikeData &&
       afterEmpty &&
       nextLine !== '' &&
       !line.startsWith('#') &&
