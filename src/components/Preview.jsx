@@ -41,6 +41,7 @@ export default function Preview({
                 className={styles.pageBtn}
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage <= 1}
+                aria-label={t('preview.page')}
               >
                 <span className="material-icons">chevron_left</span>
               </button>
@@ -51,13 +52,14 @@ export default function Preview({
                 className={styles.pageBtn}
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage >= totalPages}
+                aria-label={t('preview.page')}
               >
                 <span className="material-icons">chevron_right</span>
               </button>
             </div>
           )}
           {onReset && (
-            <button className={styles.resetBtn} onClick={onReset} title={t('toolbar.reset')}>
+            <button className={styles.resetBtn} onClick={onReset} title={t('toolbar.reset')} aria-label={t('toolbar.reset')}>
               <span className="material-icons">restart_alt</span>
             </button>
           )}

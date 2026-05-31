@@ -6,7 +6,9 @@
   "upload": {
     "dragDrop": "ファイルをドロップまたはクリックして選択",
     "paste": "Ctrl+Vで画像貼り付け可能",
-    "supported": "JPG, PNG, WEBP, PDF · 最大20MB"
+    "supported": "JPG, PNG, WEBP, PDF · 最大20MB",
+    "invalidType": "対応していない形式です。(JPG, PNG, WEBP, PDF)",
+    "tooLarge": "ファイルが大きすぎます。(最大20MB)"
   },
   "preview": {
     "title": "原本",
@@ -18,7 +20,9 @@
     "title": "Markdown結果",
     "tabEdit": "編集",
     "tabPreview": "プレビュー",
-    "placeholder": "OCR結果がここに表示されます。\n直接入力・編集も可能です。"
+    "placeholder": "OCR結果がここに表示されます。\n直接入力・編集も可能です。",
+    "chars": "文字",
+    "words": "単語"
   },
   "toolbar": {
     "copy": "コピー",
@@ -46,6 +50,8 @@
     "processing": "OCR処理中...",
     "progressInit": "OCRエンジン準備中...",
     "progressRecognize": "テキスト認識中...",
+    "cancel": "キャンセル",
+    "canceled": "処理をキャンセルしました。",
     "success": "テキスト抽出完了！",
     "fail": "抽出失敗 — 画像が鮮明か確認してください。",
     "noText": "テキストが見つかりません。別の画像をお試しください。",

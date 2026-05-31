@@ -7,6 +7,9 @@ export default function Editor({ value, onChange }) {
   const { t } = useTranslation();
   const [tab, setTab] = useState('edit');
 
+  const charCount = value.length;
+  const wordCount = value.trim() ? value.trim().split(/\s+/).length : 0;
+
   return (
     <div className={styles.panel}>
       <div className={styles.panelHeader}>
@@ -47,6 +50,12 @@ export default function Editor({ value, onChange }) {
           dangerouslySetInnerHTML={{ __html: markdownToHtml(value) || `<p class="${styles.emptyPreview}">${t('editor.placeholder')}</p>` }}
         />
       )}
+
+      <div className={styles.countBar}>
+        <span>{charCount} {t('editor.chars')}</span>
+        <span>·</span>
+        <span>{wordCount} {t('editor.words')}</span>
+      </div>
     </div>
   );
 }

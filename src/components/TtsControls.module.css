@@ -46,16 +46,6 @@
   background: #fff5f5;
 }
 
-.voiceSelect {
-  padding: 6px 8px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: 0.78rem;
-  background: var(--color-surface);
-  color: var(--color-text);
-  cursor: pointer;
-}
-
 .speedControl {
   display: flex;
   align-items: center;

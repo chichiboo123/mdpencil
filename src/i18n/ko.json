@@ -6,7 +6,9 @@
   "upload": {
     "dragDrop": "파일을 끌어다 놓거나 클릭하세요",
     "paste": "Ctrl+V 붙여넣기 가능",
-    "supported": "JPG, PNG, WEBP, PDF · 최대 20MB"
+    "supported": "JPG, PNG, WEBP, PDF · 최대 20MB",
+    "invalidType": "지원하지 않는 형식입니다. (JPG, PNG, WEBP, PDF)",
+    "tooLarge": "파일이 너무 큽니다. (최대 20MB)"
   },
   "preview": {
     "title": "원본",
@@ -18,7 +20,9 @@
     "title": "Markdown 결과",
     "tabEdit": "편집",
     "tabPreview": "미리보기",
-    "placeholder": "OCR 결과가 여기에 표시됩니다.\n직접 입력하거나 편집할 수도 있습니다."
+    "placeholder": "OCR 결과가 여기에 표시됩니다.\n직접 입력하거나 편집할 수도 있습니다.",
+    "chars": "자",
+    "words": "단어"
   },
   "toolbar": {
     "copy": "복사",
@@ -46,6 +50,8 @@
     "processing": "OCR 처리 중...",
     "progressInit": "OCR 엔진 준비 중...",
     "progressRecognize": "텍스트 인식 중...",
+    "cancel": "취소",
+    "canceled": "처리를 취소했습니다.",
     "success": "텍스트 추출 완료!",
     "fail": "추출 실패 — 이미지가 선명한지 확인해주세요.",
     "noText": "텍스트를 찾지 못했습니다. 다른 이미지를 시도해보세요.",

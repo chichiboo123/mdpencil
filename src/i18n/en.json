@@ -6,7 +6,9 @@
   "upload": {
     "dragDrop": "Drop a file here or click to browse",
     "paste": "Ctrl+V to paste image",
-    "supported": "JPG, PNG, WEBP, PDF · Max 20MB"
+    "supported": "JPG, PNG, WEBP, PDF · Max 20MB",
+    "invalidType": "Unsupported file type. (JPG, PNG, WEBP, PDF)",
+    "tooLarge": "File is too large. (Max 20MB)"
   },
   "preview": {
     "title": "Original",
@@ -18,7 +20,9 @@
     "title": "Markdown Result",
     "tabEdit": "Edit",
     "tabPreview": "Preview",
-    "placeholder": "OCR results will appear here.\nYou can also type or edit directly."
+    "placeholder": "OCR results will appear here.\nYou can also type or edit directly.",
+    "chars": "chars",
+    "words": "words"
   },
   "toolbar": {
     "copy": "Copy",
@@ -46,6 +50,8 @@
     "processing": "Processing OCR...",
     "progressInit": "Preparing OCR engine...",
     "progressRecognize": "Recognizing text...",
+    "cancel": "Cancel",
+    "canceled": "Processing canceled.",
     "success": "Text extraction complete!",
     "fail": "Extraction failed — make sure the image is clear.",
     "noText": "No text found. Try a different image.",

@@ -27,6 +27,8 @@ export default function App() {
 
   const [toast, setToast] = useState({ message: '', type: '', visible: false });
   const toastTimer = useRef(null);
+  // 진행 중인 OCR 작업을 식별/취소하기 위한 토큰
+  const ocrJobRef = useRef(0);
 
   const showToast = useCallback((message, type = 'info') => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -37,12 +39,22 @@ export default function App() {
   }, []);
 
   const handleReset = useCallback(() => {
+    ocrJobRef.current += 1; // 진행 중 작업 무효화
     setMarkdown('');
     setPreviewUrls([]);
     setCurrentPage(1);
     setTotalPages(0);
     setLoading(false);
     showToast(t('toolbar.resetDone'), 'info');
+  }, [showToast, t]);
+
+  const handleCancelOcr = useCallback(() => {
+    ocrJobRef.current += 1; // 진행 중 작업 무효화
+    setPreviewUrls([]);
+    setTotalPages(0);
+    setCurrentPage(1);
+    setLoading(false);
+    showToast(t('ocr.canceled'), 'info');
   }, [showToast, t]);
 
   useEffect(() => {
@@ -64,12 +76,16 @@ export default function App() {
 
   const handleFileSelect = useCallback(
     async (file) => {
+      const jobId = ++ocrJobRef.current; // 이 작업의 고유 ID
+      const isCurrent = () => ocrJobRef.current === jobId;
+
       setLoading(true);
       setOcrProgress({ stage: 'init', progress: 0 });
 
       try {
         if (file.type === 'application/pdf') {
           const { pages } = await renderAllPdfPages(file);
+          if (!isCurrent()) return;
           const urls = pages.map((p) => p.dataUrl);
           setPreviewUrls(urls);
           setTotalPages(pages.length);
@@ -77,15 +93,19 @@ export default function App() {
 
           let allText = '';
           for (let i = 0; i < pages.length; i++) {
+            if (!isCurrent()) return; // 취소되면 중단
             setOcrProgress({ stage: 'recognize', progress: i / pages.length });
-            const { text, confidence } = await performOCR(pages[i].dataUrl, ocrLang, (p) =>
-              setOcrProgress({ stage: p.stage, progress: (i + p.progress) / pages.length }),
-            );
+            const { text, confidence } = await performOCR(pages[i].dataUrl, ocrLang, (p) => {
+              if (isCurrent()) {
+                setOcrProgress({ stage: p.stage, progress: (i + p.progress) / pages.length });
+              }
+            });
             if (isValidOcrResult(text, confidence)) {
               allText += (allText ? '\n\n---\n\n' : '') + text;
             }
           }
 
+          if (!isCurrent()) return;
           if (!allText.trim()) {
             showToast(t('ocr.noText'), 'info');
           } else {
@@ -98,7 +118,10 @@ export default function App() {
           setTotalPages(1);
           setCurrentPage(1);
 
-          const { text, confidence } = await performOCR(file, ocrLang, setOcrProgress);
+          const { text, confidence } = await performOCR(file, ocrLang, (p) => {
+            if (isCurrent()) setOcrProgress(p);
+          });
+          if (!isCurrent()) return;
           if (!isValidOcrResult(text, confidence)) {
             showToast(t('ocr.noText'), 'info');
           } else {
@@ -107,10 +130,11 @@ export default function App() {
           }
         }
       } catch (err) {
+        if (!isCurrent()) return;
         console.error('OCR error:', err);
         showToast(file.type === 'application/pdf' ? t('ocr.pdfFail') : t('ocr.fail'), 'error');
       } finally {
-        setLoading(false);
+        if (isCurrent()) setLoading(false);
       }
     },
     [ocrLang, showToast, t],
@@ -130,13 +154,14 @@ export default function App() {
               onFileSelect={handleFileSelect}
               ocrLang={ocrLang}
               onOcrLangChange={setOcrLang}
+              showToast={showToast}
             />
           </div>
         )}
 
         {loading && (
           <div className={styles.initialScreen}>
-            <div className={styles.loadingOverlay}>
+            <div className={styles.loadingOverlay} role="status" aria-live="polite">
               <div className={styles.spinner} />
               <p className={styles.loadingText}>{t('ocr.processing')}</p>
               <p className={styles.loadingSubtext}>
@@ -152,6 +177,10 @@ export default function App() {
                   style={{ width: `${Math.round(ocrProgress.progress * 100)}%` }}
                 />
               </div>
+              <button className={styles.cancelBtn} onClick={handleCancelOcr}>
+                <span className="material-icons" style={{ fontSize: '16px' }}>close</span>
+                {t('ocr.cancel')}
+              </button>
             </div>
           </div>
         )}
@@ -176,13 +205,14 @@ export default function App() {
                 showToast={showToast}
               />
               <div className={styles.separator} />
-              <TtsControls content={markdown} showToast={showToast} />
+              <TtsControls content={markdown} showToast={showToast} ttsLang={ocrLang} />
             </div>
 
             <UploadZone
               onFileSelect={handleFileSelect}
               ocrLang={ocrLang}
               onOcrLangChange={setOcrLang}
+              showToast={showToast}
               compact
             />
           </div>
@@ -192,7 +222,7 @@ export default function App() {
       <Footer />
       <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
 
-      <div className={styles.toastContainer}>
+      <div className={styles.toastContainer} aria-live="assertive" role="status">
         <div className={`toast ${toast.type} ${toast.visible ? 'visible' : ''}`}>
           {toast.message}
         </div>
