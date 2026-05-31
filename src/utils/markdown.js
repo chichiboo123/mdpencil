@@ -30,8 +30,13 @@ function isNoiseLine(s) {
 
 /**
  * OCR 원본 텍스트를 정리하고 Markdown 구조로 변환한다.
+ * @param {string} raw 원본 텍스트
+ * @param {object} [opts]
+ * @param {boolean} [opts.preStructured] 이미 기하 기반으로 제목/문단이
+ *   구성된 경우 true. 길이 기반 제목 추정을 생략한다(중복 방지).
  */
-export function ocrTextToMarkdown(raw) {
+export function ocrTextToMarkdown(raw, opts = {}) {
+  const { preStructured = false } = opts;
   if (!raw || !raw.trim()) return '';
 
   let text = raw;
@@ -96,6 +101,7 @@ export function ocrTextToMarkdown(raw) {
     const afterEmpty = prevLine === '' || i === 0;
 
     if (
+      !preStructured &&
       isShort &&
       !isJustNumber &&
       !looksLikeData &&
