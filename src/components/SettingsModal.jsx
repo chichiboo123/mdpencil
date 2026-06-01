@@ -7,6 +7,8 @@ import {
   setProxyUrl,
   isAiCorrectEnabled,
   setAiCorrectEnabled,
+  hasPassword,
+  clearPassword,
 } from '../utils/gemini';
 
 export default function SettingsModal({ open, onClose, onSaved, showToast }) {
@@ -16,12 +18,14 @@ export default function SettingsModal({ open, onClose, onSaved, showToast }) {
 
   const [enabled, setEnabled] = useState(false);
   const [url, setUrl] = useState('');
+  const [pwSaved, setPwSaved] = useState(false);
 
   // 모달이 열릴 때 저장된 값으로 동기화
   useEffect(() => {
     if (!open) return;
     setEnabled(isAiCorrectEnabled());
     setUrl(getProxyUrl());
+    setPwSaved(hasPassword());
   }, [open]);
 
   useEffect(() => {
@@ -109,6 +113,25 @@ export default function SettingsModal({ open, onClose, onSaved, showToast }) {
               spellCheck={false}
             />
             <p className={styles.hint}>{t('settings.urlHint')}</p>
+
+            <div className={styles.pwRow}>
+              <span className={styles.hint} style={{ marginTop: 0 }}>
+                {pwSaved ? t('settings.passwordStatusSet') : t('settings.passwordStatusUnset')}
+              </span>
+              {pwSaved && (
+                <button
+                  type="button"
+                  className={styles.linkBtn}
+                  onClick={() => {
+                    clearPassword();
+                    setPwSaved(false);
+                    showToast?.(t('settings.passwordCleared'), 'info');
+                  }}
+                >
+                  {t('settings.passwordReset')}
+                </button>
+              )}
+            </div>
           </div>
 
           <div className={styles.actions}>

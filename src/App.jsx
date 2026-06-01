@@ -8,11 +8,19 @@ import Toolbar from './components/Toolbar';
 import TtsControls from './components/TtsControls';
 import HelpModal from './components/HelpModal';
 import SettingsModal from './components/SettingsModal';
+import PasswordModal from './components/PasswordModal';
 import Footer from './components/Footer';
 import { performOCR, isValidOcrResult } from './utils/ocr';
 import { renderAllPdfPages } from './utils/pdf';
 import { ocrTextToMarkdown } from './utils/markdown';
-import { canCorrect, correctMarkdown } from './utils/gemini';
+import {
+  canCorrect,
+  correctMarkdown,
+  imageToInlineData,
+  hasPassword,
+  setPassword,
+  clearPassword,
+} from './utils/gemini';
 import styles from './App.module.css';
 
 export default function App() {
@@ -20,6 +28,8 @@ export default function App() {
 
   const [helpOpen, setHelpOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const [markdown, setMarkdown] = useState('');
   const [previewUrls, setPreviewUrls] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -85,31 +95,6 @@ export default function App() {
     async (file) => {
       const jobId = ++ocrJobRef.current; // 이 작업의 고유 ID
       const isCurrent = () => ocrJobRef.current === jobId;
-      const controller = new AbortController();
-      ocrAbortRef.current = controller;
-
-      // OCR 결과 Markdown을 적용한다. AI 교정이 켜져 있으면 Gemini로 교정 후 적용,
-      // 실패하면 원본으로 폴백한다. 성공 토스트는 여기서 한 번만 띄운다.
-      const applyMarkdown = async (md) => {
-        if (canCorrect()) {
-          setOcrProgress({ stage: 'ai', progress: 0.6 });
-          try {
-            const corrected = await correctMarkdown(md, ocrLang, { signal: controller.signal });
-            if (!isCurrent()) return;
-            setMarkdown(corrected);
-            showToast(t('settings.aiDone'), 'success');
-            return;
-          } catch (err) {
-            if (!isCurrent()) return;
-            console.warn('AI correction failed:', err);
-            setMarkdown(md);
-            showToast(t('settings.aiFailed'), 'error');
-            return;
-          }
-        }
-        setMarkdown(md);
-        showToast(t('ocr.success'), 'success');
-      };
 
       setLoading(true);
       setOcrProgress({ stage: 'init', progress: 0 });
@@ -143,7 +128,8 @@ export default function App() {
           if (!allText.trim()) {
             showToast(t('ocr.noText'), 'info');
           } else {
-            await applyMarkdown(ocrTextToMarkdown(allText, { preStructured: anyStructured }));
+            setMarkdown(ocrTextToMarkdown(allText, { preStructured: anyStructured }));
+            showToast(t('ocr.success'), 'success');
           }
         } else {
           const url = URL.createObjectURL(file);
@@ -158,7 +144,8 @@ export default function App() {
           if (!isValidOcrResult(text, confidence)) {
             showToast(t('ocr.noText'), 'info');
           } else {
-            await applyMarkdown(ocrTextToMarkdown(text, { preStructured: structured }));
+            setMarkdown(ocrTextToMarkdown(text, { preStructured: structured }));
+            showToast(t('ocr.success'), 'success');
           }
         }
       } catch (err) {
@@ -172,7 +159,73 @@ export default function App() {
     [ocrLang, showToast, t],
   );
 
+  // AI 교정: 현재 페이지 원본 이미지와 Markdown 결과를 함께 Gemini로 보내 대조·교정.
+  const handleAiCorrect = useCallback(async () => {
+    if (!canCorrect()) {
+      showToast(t('settings.aiNotReady'), 'error');
+      setSettingsOpen(true);
+      return;
+    }
+    if (!markdown.trim()) {
+      showToast(t('toolbar.noContent'), 'info');
+      return;
+    }
+    // 최초 1회 비밀번호 입력 (localStorage 기준)
+    if (!hasPassword()) {
+      setPasswordOpen(true);
+      return;
+    }
+
+    setAiLoading(true);
+    const controller = new AbortController();
+    ocrAbortRef.current = controller;
+    try {
+      // 현재 페이지 원본 이미지를 대조용으로 첨부 (변환 실패 시 텍스트만으로 진행)
+      let image;
+      const src = previewUrls[currentPage - 1];
+      if (src) {
+        try {
+          image = await imageToInlineData(src);
+        } catch {
+          image = undefined;
+        }
+      }
+      const corrected = await correctMarkdown(markdown, ocrLang, {
+        image,
+        signal: controller.signal,
+      });
+      setMarkdown(corrected);
+      showToast(t('settings.aiDone'), 'success');
+    } catch (err) {
+      if (controller.signal.aborted) return;
+      if (err?.code === 'auth') {
+        clearPassword();
+        showToast(t('password.wrong'), 'error');
+        setPasswordOpen(true);
+      } else if (err?.code === 'not-found') {
+        showToast(t('settings.aiNotFound'), 'error');
+        setSettingsOpen(true);
+      } else {
+        console.warn('AI correction failed:', err);
+        showToast(t('settings.aiFailed'), 'error');
+      }
+    } finally {
+      setAiLoading(false);
+    }
+  }, [markdown, previewUrls, currentPage, ocrLang, showToast, t]);
+
+  // 비밀번호 입력 완료 → 저장 후 곧바로 교정 재시도
+  const handlePasswordSubmit = useCallback(
+    (pw) => {
+      setPassword(pw);
+      setPasswordOpen(false);
+      setTimeout(() => handleAiCorrect(), 0);
+    },
+    [handleAiCorrect],
+  );
+
   const hasPreview = previewUrls.length > 0;
+  const aiAvailable = canCorrect();
 
   return (
     <>
@@ -229,7 +282,13 @@ export default function App() {
                 onPageChange={setCurrentPage}
                 onReset={handleReset}
               />
-              <Editor value={markdown} onChange={setMarkdown} />
+              <Editor
+                value={markdown}
+                onChange={setMarkdown}
+                onAiCorrect={handleAiCorrect}
+                aiAvailable={aiAvailable}
+                aiLoading={aiLoading}
+              />
             </div>
 
             <div className={styles.actionsRow}>
@@ -259,6 +318,11 @@ export default function App() {
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         showToast={showToast}
+      />
+      <PasswordModal
+        open={passwordOpen}
+        onClose={() => setPasswordOpen(false)}
+        onSubmit={handlePasswordSubmit}
       />
 
       <div className={styles.toastContainer} aria-live="assertive" role="status">

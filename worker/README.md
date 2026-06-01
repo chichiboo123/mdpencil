@@ -20,7 +20,12 @@ wrangler login              # 브라우저로 Cloudflare 로그인
 cd worker
 wrangler deploy             # gemini-proxy.js 배포
 wrangler secret put GEMINI_API_KEY   # ← 위에서 받은 키 붙여넣기
+wrangler secret put AI_PASSWORD      # ← (권장) AI 교정 접근 비밀번호
 ```
+
+> **AI_PASSWORD** 를 설정하면, 앱에서 AI 교정을 처음 누를 때 이 비밀번호를
+> 입력해야 동작합니다(브라우저에 1회 저장). 모르는 사람이 내 무료 할당량을
+> 쓰지 못하게 막아줍니다.
 
 배포가 끝나면 다음과 같은 주소가 출력됩니다:
 

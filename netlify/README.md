@@ -49,8 +49,14 @@ Netlify 대시보드에서:
 | Key | Value | 필수 |
 |-----|-------|------|
 | `GEMINI_API_KEY` | 1단계에서 받은 키 | ✅ 필수 |
+| `AI_PASSWORD` | 원하는 비밀번호 (앱에서 AI 교정 최초 1회 입력) | 권장 |
 | `GEMINI_MODEL` | `gemini-2.5-flash` | 선택 |
 | `ALLOWED_ORIGIN` | 본인 사이트 주소 (예: `https://mdpencil.netlify.app`) | 선택(권장) |
+
+> **`AI_PASSWORD`** 를 설정하면, 앱에서 AI 교정을 처음 누를 때 이 비밀번호를
+> 입력해야 동작합니다(브라우저에 1회 저장). 모르는 사람이 프록시를 통해 내
+> API 키·무료 할당량을 쓰지 못하도록 막아줍니다. 설정하지 않으면 누구나
+> 호출할 수 있으니 **반드시 설정하길 권장**합니다.
 
 3. 저장 후 **Deploys → Trigger deploy → Deploy site** 로 재배포
    (환경변수는 재배포해야 적용됩니다)
@@ -82,7 +88,7 @@ curl -X POST https://<your-site>.netlify.app/api/gemini \
 
 배포된 사이트를 열고 우측 상단 **⚙️ 설정**:
 
-- **AI 교정 사용** 체크
+- **AI 교정 기능 사용** 체크
 - **프록시 주소** 입력:
   - 같은 Netlify 사이트를 쓰면 짧게 **`/api/gemini`** 만 입력해도 됩니다.
   - GitHub Pages 등 다른 곳에서 앱을 쓰는 경우 전체 주소
@@ -90,8 +96,26 @@ curl -X POST https://<your-site>.netlify.app/api/gemini \
     위 3단계에서 `ALLOWED_ORIGIN` 을 그 GitHub Pages 주소로 설정하세요.
 - **저장**
 
-이제 이미지를 업로드하면 OCR 후 Gemini가 띄어쓰기·오타·영어/일본어
-인식 오류를 교정합니다. 교정에 실패하면 자동으로 원본 OCR 결과를 보여줍니다.
+이제 이미지를 업로드한 뒤 **'Markdown 결과' 영역의 `✨ AI 교정` 버튼**을 누르면,
+현재 페이지의 원본 이미지와 결과를 Gemini가 **대조하여** 띄어쓰기·오타·영어/일본어
+인식 오류를 교정합니다. 처음 누를 때 `AI_PASSWORD` 비밀번호를 1회 입력합니다.
+교정에 실패하면 기존 결과를 그대로 유지합니다.
+
+---
+
+## ❗ 404 오류가 날 때 (자주 발생)
+
+`proxy responded 404` 는 입력한 프록시 주소에 함수가 없다는 뜻입니다. 점검 순서:
+
+1. **함수가 배포됐는지 확인** — 브라우저에서 아래 주소를 직접 열어보세요.
+   `https://<your-site>.netlify.app/.netlify/functions/gemini`
+   → `{"error":"Method not allowed"}` 가 보이면 함수는 정상입니다(GET이라 405/거부는 정상).
+   → 페이지가 404면 함수가 배포되지 않은 것 → `netlify.toml` 이 저장소 루트에 있는지,
+     functions 디렉터리가 `netlify/functions` 인지 확인 후 재배포.
+2. **앱이 GitHub Pages에 있는데 `/api/gemini`(상대경로)를 넣은 경우** → 404가 납니다.
+   이때는 **전체 주소** `https://<your-site>.netlify.app/api/gemini` 를 넣으세요.
+3. **`/api/gemini` 리다이렉트가 안 먹는 경우** → 대신
+   `/.netlify/functions/gemini` 전체 경로를 그대로 입력하세요(항상 동작).
 
 ---
 
