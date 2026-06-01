@@ -26,6 +26,47 @@
     "aiCorrect": "AI Fix",
     "aiCorrectHint": "Compare the original image with the result to fix spacing, typos, and language recognition."
   },
+  "mdToolbar": {
+    "title": "Markdown formatting",
+    "h1": "Heading 1",
+    "h2": "Heading 2",
+    "h3": "Heading 3",
+    "bold": "Bold",
+    "italic": "Italic",
+    "strike": "Strikethrough",
+    "code": "Inline code",
+    "ul": "Bulleted list",
+    "ol": "Numbered list",
+    "quote": "Quote",
+    "link": "Link",
+    "codeblock": "Code block",
+    "hr": "Divider",
+    "guide": "Syntax",
+    "sampleText": "text",
+    "linkText": "link text",
+    "codeText": "code"
+  },
+  "guide": {
+    "title": "Markdown Syntax Guide",
+    "intro": "Type like the left side to get the result on the right. The formatting buttons above the editor insert these for you.",
+    "colSyntax": "Type this",
+    "colResult": "Get this",
+    "items": {
+      "h1": { "md": "# Heading 1", "desc": "Largest heading" },
+      "h2": { "md": "## Heading 2", "desc": "Medium heading" },
+      "h3": { "md": "### Heading 3", "desc": "Small heading" },
+      "bold": { "md": "**bold**", "desc": "Bold text" },
+      "italic": { "md": "*italic*", "desc": "Italic text" },
+      "strike": { "md": "~~strike~~", "desc": "Strikethrough" },
+      "code": { "md": "`code`", "desc": "Inline code" },
+      "ul": { "md": "- First\n- Second", "desc": "Bulleted list" },
+      "ol": { "md": "1. First\n2. Second", "desc": "Numbered list" },
+      "quote": { "md": "> Quote", "desc": "Block quote" },
+      "link": { "md": "[link](https://example.com)", "desc": "Hyperlink" },
+      "codeblock": { "md": "```\ncode block\n```", "desc": "Multi-line code" },
+      "hr": { "md": "---", "desc": "Horizontal divider" }
+    }
+  },
   "toolbar": {
     "copy": "Copy TXT",
     "download": "Download MD",

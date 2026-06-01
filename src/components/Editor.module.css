@@ -183,6 +183,28 @@
   font-style: italic;
 }
 
+.preview del {
+  color: var(--color-text-secondary);
+}
+
+.preview a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.preview blockquote {
+  margin: 6px 0 10px 0;
+  padding: 4px 14px;
+  border-left: 3px solid var(--color-primary);
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.preview blockquote p {
+  margin: 2px 0;
+}
+
 .preview code {
   background: var(--color-bg);
   padding: 1px 5px;
