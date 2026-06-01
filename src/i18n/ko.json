@@ -50,6 +50,7 @@
     "processing": "OCR 처리 중...",
     "progressInit": "OCR 엔진 준비 중...",
     "progressRecognize": "텍스트 인식 중...",
+    "progressAi": "AI로 교정하는 중...",
     "cancel": "취소",
     "canceled": "처리를 취소했습니다.",
     "success": "텍스트 추출 완료!",
@@ -80,6 +81,19 @@
     "mdParagraph": "빈 줄 → 문단 구분",
     "section4Title": "음성 읽기(TTS)",
     "section4Body": "결과를 브라우저 음성으로 읽어줍니다. 재생/일시정지/정지와 속도 조절이 가능합니다. Markdown 기호는 자동 제거됩니다."
+  },
+  "settings": {
+    "title": "설정",
+    "aiSectionTitle": "AI 교정 (Gemini)",
+    "aiSectionBody": "OCR 결과를 Google AI Studio(Gemini)로 한 번 더 다듬습니다. 띄어쓰기, 오타, 영어·일본어 혼용 인식 오류를 교정하고 원본 줄바꿈을 최대한 살립니다. 사용하려면 본인의 무료 API 키로 프록시를 먼저 배포해야 합니다(worker 폴더 안내 참고).",
+    "enableLabel": "AI 교정 사용",
+    "urlLabel": "프록시 주소",
+    "urlHint": "Cloudflare Worker 등에 배포한 프록시 URL을 입력하세요. API 키는 이 브라우저에 저장되지 않으며, 프록시 서버에만 보관됩니다.",
+    "save": "저장",
+    "saved": "설정이 저장되었습니다.",
+    "needUrl": "AI 교정을 켜려면 프록시 주소가 필요합니다.",
+    "aiDone": "텍스트 추출 + AI 교정 완료!",
+    "aiFailed": "AI 교정에 실패해 원본 결과를 표시합니다."
   },
   "footer": {
     "credit": "Created by. 교육뮤지컬 꿈꾸는 치수쌤"
