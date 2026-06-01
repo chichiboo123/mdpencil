@@ -27,8 +27,8 @@
     "aiCorrectHint": "Compare the original image with the result to fix spacing, typos, and language recognition."
   },
   "toolbar": {
-    "copy": "Copy",
-    "download": "Download",
+    "copy": "Copy TXT",
+    "download": "Download MD",
     "clear": "Clear",
     "reset": "Reset",
     "copied": "Copied to clipboard!",

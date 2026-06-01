@@ -27,8 +27,8 @@
     "aiCorrectHint": "元の画像と結果を照合して、スペース・誤字・言語認識を補正します。"
   },
   "toolbar": {
-    "copy": "コピー",
-    "download": "ダウンロード",
+    "copy": "TXTコピー",
+    "download": "MDダウンロード",
     "clear": "クリア",
     "reset": "リセット",
     "copied": "コピーしました！",

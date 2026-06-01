@@ -27,8 +27,8 @@
     "aiCorrectHint": "원본 이미지와 결과를 대조하여 띄어쓰기·오타·언어 인식을 교정합니다."
   },
   "toolbar": {
-    "copy": "복사",
-    "download": "다운로드",
+    "copy": "TXT 복사",
+    "download": "MD 다운로드",
     "clear": "지우기",
     "reset": "초기화",
     "copied": "클립보드에 복사되었습니다!",
