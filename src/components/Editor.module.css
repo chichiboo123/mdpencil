@@ -25,6 +25,46 @@
   color: var(--color-text);
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.aiBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 11px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.aiBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.aiBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.aiSpin {
+  animation: aiSpin 0.9s linear infinite;
+}
+
+@keyframes aiSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .tabs {
   display: flex;
   gap: 2px;

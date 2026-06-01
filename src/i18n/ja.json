@@ -22,7 +22,9 @@
     "tabPreview": "プレビュー",
     "placeholder": "OCR結果がここに表示されます。\n直接入力・編集も可能です。",
     "chars": "文字",
-    "words": "単語"
+    "words": "単語",
+    "aiCorrect": "AI補正",
+    "aiCorrectHint": "元の画像と結果を照合して、スペース・誤字・言語認識を補正します。"
   },
   "toolbar": {
     "copy": "コピー",
@@ -85,15 +87,28 @@
   "settings": {
     "title": "設定",
     "aiSectionTitle": "AI補正 (Gemini)",
-    "aiSectionBody": "OCR結果をGoogle AI Studio（Gemini）でさらに整えます。スペース、誤字、英語・日本語の混在認識エラーを補正し、元の改行をできるだけ保持します。利用するには、ご自身の無料APIキーでプロキシを先にデプロイしてください（workerフォルダ参照）。",
-    "enableLabel": "AI補正を使う",
+    "aiSectionBody": "有効にすると「Markdown結果」エリアに「AI補正」ボタンが表示されます。押すと現在のページの元画像と結果をGeminiが照合し、スペース・誤字・英語・日本語の認識エラーを補正します。利用するには、ご自身の無料APIキーでプロキシ（Netlify/Cloudflare）を先にデプロイしてください。",
+    "enableLabel": "AI補正機能を使う",
     "urlLabel": "プロキシURL",
-    "urlHint": "デプロイしたプロキシURL（Cloudflare Workerなど）を入力してください。APIキーはこのブラウザに保存されず、プロキシサーバーにのみ保管されます。",
+    "urlHint": "デプロイしたプロキシURLを入力してください。同じNetlifyサイトなら「/api/gemini」だけでOKです。APIキーはこのブラウザに保存されず、プロキシサーバーにのみ保管されます。",
+    "passwordStatusSet": "パスワードが保存されています。",
+    "passwordStatusUnset": "AI補正を初めて使うときにパスワードを入力します。",
+    "passwordReset": "パスワード再設定",
+    "passwordCleared": "保存したパスワードを削除しました。",
     "save": "保存",
     "saved": "設定を保存しました。",
     "needUrl": "AI補正を有効にするにはプロキシURLが必要です。",
-    "aiDone": "テキスト抽出＋AI補正が完了しました！",
-    "aiFailed": "AI補正に失敗したため、元の結果を表示します。"
+    "aiNotReady": "先に設定でAI補正を有効化し、プロキシURLを入力してください。",
+    "aiNotFound": "プロキシURLが見つかりません（404）。アドレスを確認してください。",
+    "aiDone": "AI補正が完了しました！",
+    "aiFailed": "AI補正に失敗したため、現在の結果を維持します。"
+  },
+  "password": {
+    "title": "AI補正パスワード",
+    "body": "AI補正を使うにはパスワードが必要です。プロキシ（Netlify）の環境変数 AI_PASSWORD と一致する必要があります。入力値はこのブラウザにのみ保存されます。",
+    "placeholder": "パスワードを入力",
+    "confirm": "確認",
+    "wrong": "パスワードが正しくありません。もう一度入力してください。"
   },
   "footer": {
     "credit": "Created by. 教育ミュージカルを夢見るチス先生"

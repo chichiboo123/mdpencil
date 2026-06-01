@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { markdownToHtml } from '../utils/markdown';
 import styles from './Editor.module.css';
 
-export default function Editor({ value, onChange }) {
+export default function Editor({ value, onChange, onAiCorrect, aiAvailable, aiLoading }) {
   const { t } = useTranslation();
   const [tab, setTab] = useState('edit');
 
@@ -17,21 +17,36 @@ export default function Editor({ value, onChange }) {
           <span className="material-icons">edit_note</span>
           {t('editor.title')}
         </span>
-        <div className={styles.tabs}>
-          <button
-            className={`${styles.tab} ${tab === 'edit' ? styles.tabActive : ''}`}
-            onClick={() => setTab('edit')}
-          >
-            <span className="material-icons" style={{ fontSize: '16px' }}>edit</span>
-            {t('editor.tabEdit')}
-          </button>
-          <button
-            className={`${styles.tab} ${tab === 'preview' ? styles.tabActive : ''}`}
-            onClick={() => setTab('preview')}
-          >
-            <span className="material-icons" style={{ fontSize: '16px' }}>visibility</span>
-            {t('editor.tabPreview')}
-          </button>
+        <div className={styles.headerActions}>
+          {aiAvailable && (
+            <button
+              className={styles.aiBtn}
+              onClick={onAiCorrect}
+              disabled={aiLoading || !value.trim()}
+              title={t('editor.aiCorrectHint')}
+            >
+              <span className={`material-icons ${aiLoading ? styles.aiSpin : ''}`} style={{ fontSize: '16px' }}>
+                {aiLoading ? 'autorenew' : 'auto_fix_high'}
+              </span>
+              {t('editor.aiCorrect')}
+            </button>
+          )}
+          <div className={styles.tabs}>
+            <button
+              className={`${styles.tab} ${tab === 'edit' ? styles.tabActive : ''}`}
+              onClick={() => setTab('edit')}
+            >
+              <span className="material-icons" style={{ fontSize: '16px' }}>edit</span>
+              {t('editor.tabEdit')}
+            </button>
+            <button
+              className={`${styles.tab} ${tab === 'preview' ? styles.tabActive : ''}`}
+              onClick={() => setTab('preview')}
+            >
+              <span className="material-icons" style={{ fontSize: '16px' }}>visibility</span>
+              {t('editor.tabPreview')}
+            </button>
+          </div>
         </div>
       </div>
 

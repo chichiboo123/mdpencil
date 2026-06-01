@@ -22,7 +22,9 @@
     "tabPreview": "Preview",
     "placeholder": "OCR results will appear here.\nYou can also type or edit directly.",
     "chars": "chars",
-    "words": "words"
+    "words": "words",
+    "aiCorrect": "AI Fix",
+    "aiCorrectHint": "Compare the original image with the result to fix spacing, typos, and language recognition."
   },
   "toolbar": {
     "copy": "Copy",
@@ -85,15 +87,28 @@
   "settings": {
     "title": "Settings",
     "aiSectionTitle": "AI Correction (Gemini)",
-    "aiSectionBody": "Refine OCR output once more with Google AI Studio (Gemini). It fixes spacing, typos, and mixed-language (English/Japanese) recognition errors while preserving the original line breaks. To use it, first deploy a proxy with your own free API key (see the worker folder).",
+    "aiSectionBody": "When enabled, an 'AI Fix' button appears in the Markdown Result panel. It sends the current page's original image together with the result to Gemini, which compares them and fixes spacing, typos, and English/Japanese recognition errors. To use it, first deploy a proxy (Netlify/Cloudflare) with your own free API key.",
     "enableLabel": "Enable AI correction",
     "urlLabel": "Proxy URL",
-    "urlHint": "Enter the proxy URL you deployed (e.g. a Cloudflare Worker). Your API key is never stored in this browser — it stays only on the proxy server.",
+    "urlHint": "Enter the proxy URL you deployed. On the same Netlify site you can just enter '/api/gemini'. Your API key is never stored in this browser — it stays only on the proxy server.",
+    "passwordStatusSet": "A password is saved.",
+    "passwordStatusUnset": "You will be asked for a password the first time you use AI correction.",
+    "passwordReset": "Reset password",
+    "passwordCleared": "Saved password cleared.",
     "save": "Save",
     "saved": "Settings saved.",
     "needUrl": "A proxy URL is required to enable AI correction.",
-    "aiDone": "Text extraction + AI correction complete!",
-    "aiFailed": "AI correction failed — showing the raw result."
+    "aiNotReady": "Enable AI correction and set the proxy URL in Settings first.",
+    "aiNotFound": "Proxy URL not found (404). Check that the address is correct.",
+    "aiDone": "AI correction complete!",
+    "aiFailed": "AI correction failed — keeping the current result."
+  },
+  "password": {
+    "title": "AI Correction Password",
+    "body": "A password is required to use AI correction. It must match the AI_PASSWORD environment variable set on your proxy (Netlify). The value is stored only in this browser.",
+    "placeholder": "Enter password",
+    "confirm": "Confirm",
+    "wrong": "Incorrect password. Please try again."
   },
   "footer": {
     "credit": "Created by. Chisu Teacher who dreams of educational musicals"
