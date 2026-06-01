@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import styles from './Header.module.css';
 
-export default function Header({ onHelpOpen }) {
+export default function Header({ onHelpOpen, onSettingsOpen }) {
   const { t, i18n } = useTranslation();
 
   return (
@@ -21,6 +21,9 @@ export default function Header({ onHelpOpen }) {
           <option value="en">{t('lang.en')}</option>
           <option value="ja">{t('lang.ja')}</option>
         </select>
+        <button className={styles.helpBtn} onClick={onSettingsOpen} aria-label={t('settings.title')}>
+          <span className="material-icons">settings</span>
+        </button>
         <button className={styles.helpBtn} onClick={onHelpOpen} aria-label={t('help.title')}>
           <span className="material-icons">help_outline</span>
         </button>

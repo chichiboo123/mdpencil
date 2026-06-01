@@ -50,6 +50,7 @@
     "processing": "OCR処理中...",
     "progressInit": "OCRエンジン準備中...",
     "progressRecognize": "テキスト認識中...",
+    "progressAi": "AIで補正中...",
     "cancel": "キャンセル",
     "canceled": "処理をキャンセルしました。",
     "success": "テキスト抽出完了！",
@@ -80,6 +81,19 @@
     "mdParagraph": "空行 → 段落区切り",
     "section4Title": "音声読み上げ（TTS）",
     "section4Body": "ブラウザ音声で読み上げます。再生/一時停止/停止、速度調節が可能。Markdown記号は自動除去されます。"
+  },
+  "settings": {
+    "title": "設定",
+    "aiSectionTitle": "AI補正 (Gemini)",
+    "aiSectionBody": "OCR結果をGoogle AI Studio（Gemini）でさらに整えます。スペース、誤字、英語・日本語の混在認識エラーを補正し、元の改行をできるだけ保持します。利用するには、ご自身の無料APIキーでプロキシを先にデプロイしてください（workerフォルダ参照）。",
+    "enableLabel": "AI補正を使う",
+    "urlLabel": "プロキシURL",
+    "urlHint": "デプロイしたプロキシURL（Cloudflare Workerなど）を入力してください。APIキーはこのブラウザに保存されず、プロキシサーバーにのみ保管されます。",
+    "save": "保存",
+    "saved": "設定を保存しました。",
+    "needUrl": "AI補正を有効にするにはプロキシURLが必要です。",
+    "aiDone": "テキスト抽出＋AI補正が完了しました！",
+    "aiFailed": "AI補正に失敗したため、元の結果を表示します。"
   },
   "footer": {
     "credit": "Created by. 教育ミュージカルを夢見るチス先生"

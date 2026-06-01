@@ -7,16 +7,19 @@ import Editor from './components/Editor';
 import Toolbar from './components/Toolbar';
 import TtsControls from './components/TtsControls';
 import HelpModal from './components/HelpModal';
+import SettingsModal from './components/SettingsModal';
 import Footer from './components/Footer';
 import { performOCR, isValidOcrResult } from './utils/ocr';
 import { renderAllPdfPages } from './utils/pdf';
 import { ocrTextToMarkdown } from './utils/markdown';
+import { canCorrect, correctMarkdown } from './utils/gemini';
 import styles from './App.module.css';
 
 export default function App() {
   const { t } = useTranslation();
 
   const [helpOpen, setHelpOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [markdown, setMarkdown] = useState('');
   const [previewUrls, setPreviewUrls] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -29,6 +32,8 @@ export default function App() {
   const toastTimer = useRef(null);
   // 진행 중인 OCR 작업을 식별/취소하기 위한 토큰
   const ocrJobRef = useRef(0);
+  // 진행 중인 AI 교정 요청을 취소하기 위한 컨트롤러
+  const ocrAbortRef = useRef(null);
 
   const showToast = useCallback((message, type = 'info') => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -40,6 +45,7 @@ export default function App() {
 
   const handleReset = useCallback(() => {
     ocrJobRef.current += 1; // 진행 중 작업 무효화
+    ocrAbortRef.current?.abort();
     setMarkdown('');
     setPreviewUrls([]);
     setCurrentPage(1);
@@ -50,6 +56,7 @@ export default function App() {
 
   const handleCancelOcr = useCallback(() => {
     ocrJobRef.current += 1; // 진행 중 작업 무효화
+    ocrAbortRef.current?.abort();
     setPreviewUrls([]);
     setTotalPages(0);
     setCurrentPage(1);
@@ -78,6 +85,31 @@ export default function App() {
     async (file) => {
       const jobId = ++ocrJobRef.current; // 이 작업의 고유 ID
       const isCurrent = () => ocrJobRef.current === jobId;
+      const controller = new AbortController();
+      ocrAbortRef.current = controller;
+
+      // OCR 결과 Markdown을 적용한다. AI 교정이 켜져 있으면 Gemini로 교정 후 적용,
+      // 실패하면 원본으로 폴백한다. 성공 토스트는 여기서 한 번만 띄운다.
+      const applyMarkdown = async (md) => {
+        if (canCorrect()) {
+          setOcrProgress({ stage: 'ai', progress: 0.6 });
+          try {
+            const corrected = await correctMarkdown(md, ocrLang, { signal: controller.signal });
+            if (!isCurrent()) return;
+            setMarkdown(corrected);
+            showToast(t('settings.aiDone'), 'success');
+            return;
+          } catch (err) {
+            if (!isCurrent()) return;
+            console.warn('AI correction failed:', err);
+            setMarkdown(md);
+            showToast(t('settings.aiFailed'), 'error');
+            return;
+          }
+        }
+        setMarkdown(md);
+        showToast(t('ocr.success'), 'success');
+      };
 
       setLoading(true);
       setOcrProgress({ stage: 'init', progress: 0 });
@@ -111,8 +143,7 @@ export default function App() {
           if (!allText.trim()) {
             showToast(t('ocr.noText'), 'info');
           } else {
-            setMarkdown(ocrTextToMarkdown(allText, { preStructured: anyStructured }));
-            showToast(t('ocr.success'), 'success');
+            await applyMarkdown(ocrTextToMarkdown(allText, { preStructured: anyStructured }));
           }
         } else {
           const url = URL.createObjectURL(file);
@@ -127,8 +158,7 @@ export default function App() {
           if (!isValidOcrResult(text, confidence)) {
             showToast(t('ocr.noText'), 'info');
           } else {
-            setMarkdown(ocrTextToMarkdown(text, { preStructured: structured }));
-            showToast(t('ocr.success'), 'success');
+            await applyMarkdown(ocrTextToMarkdown(text, { preStructured: structured }));
           }
         }
       } catch (err) {
@@ -146,7 +176,7 @@ export default function App() {
 
   return (
     <>
-      <Header onHelpOpen={() => setHelpOpen(true)} />
+      <Header onHelpOpen={() => setHelpOpen(true)} onSettingsOpen={() => setSettingsOpen(true)} />
 
       <main className={styles.container}>
         {!loading && !hasPreview && (
@@ -171,7 +201,9 @@ export default function App() {
                   ? t('ocr.progressInit')
                   : ocrProgress.stage === 'recognize'
                     ? t('ocr.progressRecognize')
-                    : t('ocr.processing')}
+                    : ocrProgress.stage === 'ai'
+                      ? t('ocr.progressAi')
+                      : t('ocr.processing')}
               </p>
               <div className={styles.progressBar}>
                 <div
@@ -223,6 +255,11 @@ export default function App() {
 
       <Footer />
       <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <SettingsModal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        showToast={showToast}
+      />
 
       <div className={styles.toastContainer} aria-live="assertive" role="status">
         <div className={`toast ${toast.type} ${toast.visible ? 'visible' : ''}`}>

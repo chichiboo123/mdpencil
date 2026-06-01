@@ -50,6 +50,7 @@
     "processing": "Processing OCR...",
     "progressInit": "Preparing OCR engine...",
     "progressRecognize": "Recognizing text...",
+    "progressAi": "Refining with AI...",
     "cancel": "Cancel",
     "canceled": "Processing canceled.",
     "success": "Text extraction complete!",
@@ -80,6 +81,19 @@
     "mdParagraph": "Blank line → Paragraph break",
     "section4Title": "Text-to-Speech (TTS)",
     "section4Body": "Listen to results using browser speech. Play/pause/stop and speed control available. Markdown symbols are auto-removed."
+  },
+  "settings": {
+    "title": "Settings",
+    "aiSectionTitle": "AI Correction (Gemini)",
+    "aiSectionBody": "Refine OCR output once more with Google AI Studio (Gemini). It fixes spacing, typos, and mixed-language (English/Japanese) recognition errors while preserving the original line breaks. To use it, first deploy a proxy with your own free API key (see the worker folder).",
+    "enableLabel": "Enable AI correction",
+    "urlLabel": "Proxy URL",
+    "urlHint": "Enter the proxy URL you deployed (e.g. a Cloudflare Worker). Your API key is never stored in this browser — it stays only on the proxy server.",
+    "save": "Save",
+    "saved": "Settings saved.",
+    "needUrl": "A proxy URL is required to enable AI correction.",
+    "aiDone": "Text extraction + AI correction complete!",
+    "aiFailed": "AI correction failed — showing the raw result."
   },
   "footer": {
     "credit": "Created by. Chisu Teacher who dreams of educational musicals"
