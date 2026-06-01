@@ -1,0 +1,19 @@
+# Netlify 배포 설정 — 몽당(MD)연필
+#
+# 앱(정적 사이트)과 Gemini 교정 프록시 함수를 같은 도메인에서 호스팅합니다.
+# 같은 도메인이므로 CORS 설정 없이도 동작합니다.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[functions]
+  # 함수 런타임: 최신 Node (fetch 내장)
+  node_bundler = "esbuild"
+
+# (선택) 짧은 경로로 함수 노출: /api/gemini → 함수 호출
+[[redirects]]
+  from = "/api/gemini"
+  to = "/.netlify/functions/gemini"
+  status = 200
