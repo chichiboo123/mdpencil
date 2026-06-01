@@ -6,29 +6,21 @@ const LANG_MAP = {
   ja: 'jpn',
 };
 
-// 단어 단위 신뢰도 임계값. 이보다 낮은 단어는 노이즈로 간주하고 버린다.
-// (사진·아이콘·UI 요소에서 나온 잘못된 인식은 신뢰도가 낮다)
-const MIN_WORD_CONFIDENCE = 60;
-// 줄 평균 신뢰도가 이보다 낮으면 줄 전체를 버린다.
-const MIN_LINE_CONFIDENCE = 45;
-
 /**
  * 이미지를 Canvas에 로드하여 가볍게 전처리한다.
  * - 그레이스케일 변환
  * - 대비(contrast) 정규화
- * - 작은 이미지 확대
+ * - 작은 이미지 확대 (Tesseract 권장: 충분한 해상도 ≈ 300DPI)
  *
  * ⚠️ 하드 이진화(binarization)는 의도적으로 하지 않는다.
  * 스크린샷·사진이 포함된 이미지에서 전역 이진화는 사진/아이콘을
- * 노이즈로 만들어 OCR 품질을 떨어뜨린다. 이진화는 Tesseract 내부의
- * 적응형(Leptonica) 처리에 맡긴다.
+ * 노이즈로 만든다. 이진화는 Tesseract 내부의 적응형 처리에 맡긴다.
  */
 function preprocessImage(imageSource) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
-      // 작은 이미지는 확대(최대 3배, 최대 변 ~2000px)하여 인식률을 높인다.
       const scale = Math.max(1, Math.min(3, 2000 / Math.max(img.width, img.height)));
       const w = Math.round(img.width * scale);
       const h = Math.round(img.height * scale);
@@ -45,7 +37,7 @@ function preprocessImage(imageSource) {
       const imageData = ctx.getImageData(0, 0, w, h);
       const data = imageData.data;
 
-      // 1) 그레이스케일 변환
+      // 그레이스케일 변환
       for (let i = 0; i < data.length; i += 4) {
         const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
         data[i] = gray;
@@ -53,7 +45,7 @@ function preprocessImage(imageSource) {
         data[i + 2] = gray;
       }
 
-      // 2) 대비 정규화 (contrast stretch) — 텍스트 가독성만 살짝 끌어올린다.
+      // 대비 정규화 (contrast stretch)
       let min = 255, max = 0;
       for (let i = 0; i < data.length; i += 4) {
         if (data[i] < min) min = data[i];
@@ -80,47 +72,106 @@ function preprocessImage(imageSource) {
   });
 }
 
+function median(nums) {
+  if (!nums.length) return 0;
+  const s = [...nums].sort((a, b) => a - b);
+  return s[Math.floor(s.length / 2)];
+}
+
+function countAlnum(str) {
+  return (str.match(/[\p{L}\p{N}]/gu) || []).length;
+}
+
 /**
- * Tesseract 결과(blocks)에서 신뢰도가 높은 텍스트만 재구성한다.
- * 단락(paragraph) 구조를 보존하여 빈 줄로 구분하고,
- * 저신뢰 단어/줄은 버려 사진·아이콘 노이즈를 제거한다.
+ * Tesseract의 줄 단위 bounding box를 이용해 문서 구조를 복원한다.
+ * - 줄 높이가 본문 중앙값보다 크면 제목(#/##)으로 추정
+ * - 줄 사이 세로 간격이 넓으면 문단 구분(빈 줄)
+ *
+ * ❗ 텍스트는 신뢰도로 버리지 않는다. 인식된 모든 단어를 보존한다.
+ *    (구조 추정에만 기하 정보를 사용)
  */
-function reconstructText(blocks) {
+function reconstructMarkdown(blocks) {
   if (!Array.isArray(blocks) || blocks.length === 0) return null;
 
-  const paragraphs = [];
-
+  const lines = [];
   for (const block of blocks) {
     for (const para of block.paragraphs || []) {
-      const paraLines = [];
-
       for (const line of para.lines || []) {
-        const words = line.words || [];
-        // 신뢰도 높은 단어만 유지
-        const goodWords = words
-          .filter((wd) => (wd.confidence ?? 0) >= MIN_WORD_CONFIDENCE)
+        const words = (line.words || [])
           .map((wd) => (wd.text || '').trim())
           .filter(Boolean);
+        if (words.length === 0) continue;
 
-        if (goodWords.length === 0) continue;
-        // 줄 자체의 평균 신뢰도가 너무 낮으면 통째로 버린다.
-        if ((line.confidence ?? 0) < MIN_LINE_CONFIDENCE) continue;
+        const text = words.join(' ').replace(/[^\S\n]{2,}/g, ' ').trim();
+        if (!text) continue;
 
-        paraLines.push(goodWords.join(' '));
-      }
-
-      if (paraLines.length > 0) {
-        paragraphs.push(paraLines.join('\n'));
+        const bb = line.bbox || {};
+        const top = Number.isFinite(bb.y0) ? bb.y0 : null;
+        const bottom = Number.isFinite(bb.y1) ? bb.y1 : null;
+        const height = top != null && bottom != null ? bottom - top : 0;
+        lines.push({ text, top, bottom, height });
       }
     }
   }
+  if (lines.length === 0) return null;
 
-  return paragraphs.join('\n\n');
+  const medianHeight = median(lines.map((l) => l.height).filter((h) => h > 0));
+
+  const gaps = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i].top != null && lines[i - 1].bottom != null) {
+      const g = lines[i].top - lines[i - 1].bottom;
+      if (g >= 0) gaps.push(g);
+    }
+  }
+  // 본문 줄간격은 "작은 쪽" 분포로 추정한다(30 백분위). 중앙값은 문단이
+  // 짧을 때 큰 간격에 오염되어 문단 분리를 놓치기 쉽다.
+  const sortedGaps = [...gaps].sort((a, b) => a - b);
+  const baseGap = sortedGaps.length
+    ? sortedGaps[Math.floor(sortedGaps.length * 0.3)]
+    : 0;
+
+  const out = [];
+  for (let i = 0; i < lines.length; i++) {
+    const l = lines[i];
+
+    // 문단 구분: 줄 간격이 본문 줄간격 + 줄 높이의 절반을 넘으면 빈 줄 삽입.
+    // (촘촘한 본문·이중 행간 모두에서 과/미분할을 막는 적응형 기준)
+    if (i > 0 && l.top != null && lines[i - 1].bottom != null && medianHeight > 0) {
+      const gap = l.top - lines[i - 1].bottom;
+      const threshold = baseGap + medianHeight * 0.5;
+      if (gap > threshold) out.push('');
+    }
+
+    let line = l.text;
+    const charLen = [...line].length;
+    const isList = /^(\d+[.)]\s|[-*•·○●◆◇▶▷※]\s?)/.test(line);
+    const endsSentence = /[.。!?！？,，;；]$/.test(line);
+
+    // 제목 추정: 줄 높이가 본문보다 크고, 짧고, 문장부호로 끝나지 않는 줄
+    if (
+      medianHeight > 0 &&
+      l.height > 0 &&
+      !isList &&
+      !endsSentence &&
+      charLen <= 28 &&
+      !line.startsWith('#')
+    ) {
+      const ratio = l.height / medianHeight;
+      if (ratio >= 1.5) line = `# ${line}`;
+      else if (ratio >= 1.28) line = `## ${line}`;
+    }
+
+    out.push(line);
+  }
+
+  return out.join('\n');
 }
 
 /**
  * OCR 수행 후 텍스트와 신뢰도를 반환한다.
- * 이미지 전처리 → Tesseract 인식 → 신뢰도 기반 노이즈 제거.
+ * 이미지 전처리 → Tesseract 인식 → 기하 기반 구조 복원.
+ * 반환값의 structured=true면 이미 제목/문단이 구성된 Markdown임.
  */
 export async function performOCR(imageSource, ocrLang = 'ko', onProgress) {
   const lang = LANG_MAP[ocrLang] || 'kor';
@@ -142,19 +193,27 @@ export async function performOCR(imageSource, ocrLang = 'ko', onProgress) {
 
   try {
     await worker.setParameters({
-      // PSM 3: 자동 페이지 레이아웃 분석. 다중 영역(텍스트+사진)을 구분하고
-      // 비텍스트 영역을 건너뛰어 스크린샷·복합 문서에 강하다.
-      tessedit_pageseg_mode: '3',
+      // PSM 6: 단일 균일 텍스트 블록. 영역을 건너뛰지 않고 본문 전체를 인식 →
+      // 일반 문서에서 누락 없이 최대한 많은 텍스트를 확보한다.
+      tessedit_pageseg_mode: '6',
       preserve_interword_spaces: '1',
     });
 
     const { data } = await worker.recognize(processedImage);
 
-    // 신뢰도 기반 재구성. 실패 시 원본 텍스트로 폴백.
-    const reconstructed = reconstructText(data.blocks);
-    const text = reconstructed && reconstructed.trim() ? reconstructed : data.text;
+    // 기하 기반 구조 복원. 단, 텍스트 손실이 없을 때만 채택(완전성 보장).
+    let text = data.text;
+    let structured = false;
+    const rebuilt = reconstructMarkdown(data.blocks);
+    if (rebuilt && rebuilt.trim()) {
+      // 복원본이 원문 글자수의 90% 이상을 보존하면 채택, 아니면 원문 유지
+      if (countAlnum(rebuilt) >= countAlnum(data.text) * 0.9) {
+        text = rebuilt;
+        structured = true;
+      }
+    }
 
-    return { text, confidence: data.confidence };
+    return { text, confidence: data.confidence, structured };
   } finally {
     await worker.terminate();
   }
@@ -166,11 +225,10 @@ export async function performOCR(imageSource, ocrLang = 'ko', onProgress) {
  */
 export function isValidOcrResult(text, confidence) {
   if (!text || !text.trim()) return false;
-  if (confidence < 20) return false;
+  if (confidence < 15) return false;
 
   const cleaned = text.trim();
-  // 의미 있는 문자: 한글, 영문, 일문, 숫자, 일반 구두점, 공백
   const readable = cleaned.match(/[a-zA-Z가-힣ぁ-んァ-ヶ一-龥0-9.,!?;:'"\s\-()]/g);
   const ratio = readable ? readable.length / cleaned.length : 0;
-  return ratio > 0.35;
+  return ratio > 0.3;
 }

@@ -92,16 +92,18 @@ export default function App() {
           setCurrentPage(1);
 
           let allText = '';
+          let anyStructured = false;
           for (let i = 0; i < pages.length; i++) {
             if (!isCurrent()) return; // 취소되면 중단
             setOcrProgress({ stage: 'recognize', progress: i / pages.length });
-            const { text, confidence } = await performOCR(pages[i].dataUrl, ocrLang, (p) => {
+            const { text, confidence, structured } = await performOCR(pages[i].dataUrl, ocrLang, (p) => {
               if (isCurrent()) {
                 setOcrProgress({ stage: p.stage, progress: (i + p.progress) / pages.length });
               }
             });
             if (isValidOcrResult(text, confidence)) {
               allText += (allText ? '\n\n---\n\n' : '') + text;
+              if (structured) anyStructured = true;
             }
           }
 
@@ -109,7 +111,7 @@ export default function App() {
           if (!allText.trim()) {
             showToast(t('ocr.noText'), 'info');
           } else {
-            setMarkdown(ocrTextToMarkdown(allText));
+            setMarkdown(ocrTextToMarkdown(allText, { preStructured: anyStructured }));
             showToast(t('ocr.success'), 'success');
           }
         } else {
@@ -118,14 +120,14 @@ export default function App() {
           setTotalPages(1);
           setCurrentPage(1);
 
-          const { text, confidence } = await performOCR(file, ocrLang, (p) => {
+          const { text, confidence, structured } = await performOCR(file, ocrLang, (p) => {
             if (isCurrent()) setOcrProgress(p);
           });
           if (!isCurrent()) return;
           if (!isValidOcrResult(text, confidence)) {
             showToast(t('ocr.noText'), 'info');
           } else {
-            setMarkdown(ocrTextToMarkdown(text));
+            setMarkdown(ocrTextToMarkdown(text, { preStructured: structured }));
             showToast(t('ocr.success'), 'success');
           }
         }
