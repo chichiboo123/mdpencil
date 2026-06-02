@@ -148,6 +148,20 @@ export function markdownToHtml(md) {
   const output = [];
   let inList = false;
   let listType = '';
+  let inQuote = false;
+
+  const closeList = () => {
+    if (inList) {
+      output.push(listType === 'ul' ? '</ul>' : '</ol>');
+      inList = false;
+    }
+  };
+  const closeQuote = () => {
+    if (inQuote) {
+      output.push('</blockquote>');
+      inQuote = false;
+    }
+  };
 
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i];
@@ -155,14 +169,14 @@ export function markdownToHtml(md) {
     // 코드블록 복원
     const cbMatch = line.match(/^%%CODEBLOCK_(\d+)%%$/);
     if (cbMatch) {
-      if (inList) { output.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+      closeList(); closeQuote();
       output.push(`<pre><code>${escapeHtml(codeBlocks[parseInt(cbMatch[1])])}</code></pre>`);
       continue;
     }
 
     // 수평선
     if (/^---+$/.test(line.trim())) {
-      if (inList) { output.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+      closeList(); closeQuote();
       output.push('<hr/>');
       continue;
     }
@@ -170,17 +184,27 @@ export function markdownToHtml(md) {
     // 제목
     const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
     if (headingMatch) {
-      if (inList) { output.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+      closeList(); closeQuote();
       const level = headingMatch[1].length;
       output.push(`<h${level}>${inlineFormat(headingMatch[2])}</h${level}>`);
+      continue;
+    }
+
+    // 인용문
+    const bqMatch = line.match(/^>\s?(.*)$/);
+    if (bqMatch) {
+      closeList();
+      if (!inQuote) { output.push('<blockquote>'); inQuote = true; }
+      output.push(`<p>${inlineFormat(bqMatch[1])}</p>`);
       continue;
     }
 
     // 비순서 목록
     const ulMatch = line.match(/^[-*+]\s+(.+)$/);
     if (ulMatch) {
+      closeQuote();
       if (!inList || listType !== 'ul') {
-        if (inList) output.push(listType === 'ul' ? '</ul>' : '</ol>');
+        closeList();
         output.push('<ul>');
         inList = true;
         listType = 'ul';
@@ -192,8 +216,9 @@ export function markdownToHtml(md) {
     // 순서 목록
     const olMatch = line.match(/^\d+[.)]\s+(.+)$/);
     if (olMatch) {
+      closeQuote();
       if (!inList || listType !== 'ol') {
-        if (inList) output.push(listType === 'ul' ? '</ul>' : '</ol>');
+        closeList();
         output.push('<ol>');
         inList = true;
         listType = 'ol';
@@ -204,16 +229,17 @@ export function markdownToHtml(md) {
 
     // 빈 줄
     if (line.trim() === '') {
-      if (inList) { output.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+      closeList(); closeQuote();
       continue;
     }
 
     // 일반 텍스트 → 단락
-    if (inList) { output.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+    closeList(); closeQuote();
     output.push(`<p>${inlineFormat(line)}</p>`);
   }
 
-  if (inList) output.push(listType === 'ul' ? '</ul>' : '</ol>');
+  closeList();
+  closeQuote();
 
   let result = output.join('\n');
 
@@ -235,9 +261,16 @@ function escapeHtml(str) {
 
 function inlineFormat(text) {
   let s = escapeHtml(text);
+  // 링크 [텍스트](url)
+  s = s.replace(
+    /\[([^\]]+)\]\(([^)\s]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>',
+  );
   // 볼드
   s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   s = s.replace(/__(.+?)__/g, '<strong>$1</strong>');
+  // 취소선
+  s = s.replace(/~~(.+?)~~/g, '<del>$1</del>');
   // 이탤릭
   s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
   s = s.replace(/_(.+?)_/g, '<em>$1</em>');
@@ -259,6 +292,8 @@ export function markdownToReadableText(md) {
   text = text.replace(/\*([^*]+)\*/g, '$1');
   text = text.replace(/__([^_]+)__/g, '$1');
   text = text.replace(/_([^_]+)_/g, '$1');
+  text = text.replace(/~~([^~]+)~~/g, '$1');
+  text = text.replace(/^>\s?/gm, '');
   text = text.replace(/^[-*+]\s+/gm, '');
   text = text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
   text = text.replace(/!\[([^\]]*)\]\([^)]+\)/g, '');

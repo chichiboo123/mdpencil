@@ -1,11 +1,15 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { markdownToHtml } from '../utils/markdown';
+import MarkdownToolbar from './MarkdownToolbar';
+import MarkdownGuide from './MarkdownGuide';
 import styles from './Editor.module.css';
 
 export default function Editor({ value, onChange, onAiCorrect, aiAvailable, aiLoading }) {
   const { t } = useTranslation();
   const [tab, setTab] = useState('edit');
+  const [guideOpen, setGuideOpen] = useState(false);
+  const textareaRef = useRef(null);
 
   const charCount = value.length;
   const wordCount = value.trim() ? value.trim().split(/\s+/).length : 0;
@@ -51,14 +55,23 @@ export default function Editor({ value, onChange, onAiCorrect, aiAvailable, aiLo
       </div>
 
       {tab === 'edit' ? (
-        <textarea
-          className={styles.textarea}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={t('editor.placeholder')}
-          spellCheck={false}
-          aria-label={t('editor.title')}
-        />
+        <>
+          <MarkdownToolbar
+            textareaRef={textareaRef}
+            value={value}
+            onChange={onChange}
+            onOpenGuide={() => setGuideOpen(true)}
+          />
+          <textarea
+            ref={textareaRef}
+            className={styles.textarea}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={t('editor.placeholder')}
+            spellCheck={false}
+            aria-label={t('editor.title')}
+          />
+        </>
       ) : (
         <div
           className={styles.preview}
@@ -71,6 +84,8 @@ export default function Editor({ value, onChange, onAiCorrect, aiAvailable, aiLo
         <span>·</span>
         <span>{wordCount} {t('editor.words')}</span>
       </div>
+
+      <MarkdownGuide open={guideOpen} onClose={() => setGuideOpen(false)} />
     </div>
   );
 }
