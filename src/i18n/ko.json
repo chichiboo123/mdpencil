@@ -155,6 +155,10 @@
   "footer": {
     "credit": "Created by. 교육뮤지컬 꿈꾸는 치수쌤"
   },
+  "model": {
+    "tier": "{{n}}순위",
+    "tooltip": "현재 AI 모델: {{name}} (한도 초과 시 자동으로 다음 모델로 전환됩니다)"
+  },
   "lang": {
     "ko": "한국어",
     "en": "English",

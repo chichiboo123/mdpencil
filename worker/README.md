@@ -45,6 +45,22 @@ ALLOWED_ORIGIN = "https://chichiboo123.github.io"
 
 바꾼 뒤 `wrangler deploy` 를 다시 실행하세요.
 
+## 3-1. (선택) 다중 모델 폴백 설정
+
+1순위 모델이 무료 티어 한도(429 / Quota Exceeded)에 걸리면 자동으로 다음 순위
+모델로 넘어갑니다. 별도 설정 없이도 기본 체인
+(`gemini-2.5-flash → gemini-2.5-flash-lite → gemini-2.0-flash → gemini-2.0-flash-lite`)
+이 적용됩니다. 우선순위를 직접 바꾸려면 `wrangler.toml` 에 다음을 추가하세요:
+
+```toml
+[vars]
+# 쉼표로 우선순위를 지정(앞이 1순위). 존재하지 않는 모델 ID는 자동으로 건너뜁니다.
+GEMINI_MODELS = "gemini-2.5-flash,gemini-2.5-flash-lite,gemini-2.0-flash"
+```
+
+> 앱 헤더의 "배터리" 표시로 지금 어떤 모델이 응답했는지 확인할 수 있습니다.
+> (1순위=가득 찬 초록, 한도 초과로 하위 모델로 갈수록 노랑→주황→빨강)
+
 ## 4. 앱에 연결
 
 앱 우측 상단 **⚙️ 설정**을 열고:

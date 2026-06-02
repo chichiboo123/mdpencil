@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import ModelIndicator from './ModelIndicator';
 import styles from './Header.module.css';
 
 export default function Header({ onHelpOpen, onSettingsOpen }) {
@@ -11,6 +12,8 @@ export default function Header({ onHelpOpen, onSettingsOpen }) {
         <span className={styles.title}>{t('app.title')}</span>
       </div>
       <div className={styles.controls}>
+        {/* 현재 호출 중인 Gemini 모델을 배터리처럼 표시 */}
+        <ModelIndicator />
         <select
           className={styles.langSelect}
           value={i18n.language}

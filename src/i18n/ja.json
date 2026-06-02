@@ -155,6 +155,10 @@
   "footer": {
     "credit": "Created by. 教育ミュージカルを夢見るチス先生"
   },
+  "model": {
+    "tier": "第{{n}}位",
+    "tooltip": "現在のAIモデル: {{name}}（上限超過時は自動的に次のモデルへ切り替わります）"
+  },
   "lang": {
     "ko": "한국어",
     "en": "English",

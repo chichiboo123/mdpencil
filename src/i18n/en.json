@@ -155,6 +155,10 @@
   "footer": {
     "credit": "Created by. Chisu Teacher who dreams of educational musicals"
   },
+  "model": {
+    "tier": "#{{n}}",
+    "tooltip": "Current AI model: {{name}} (automatically switches to the next model when rate-limited)"
+  },
   "lang": {
     "ko": "한국어",
     "en": "English",
