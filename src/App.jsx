@@ -190,7 +190,7 @@ export default function App() {
           image = undefined;
         }
       }
-      const corrected = await correctMarkdown(markdown, ocrLang, {
+      const { text: corrected } = await correctMarkdown(markdown, ocrLang, {
         image,
         signal: controller.signal,
       });

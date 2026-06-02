@@ -50,8 +50,15 @@ Netlify 대시보드에서:
 |-----|-------|------|
 | `GEMINI_API_KEY` | 1단계에서 받은 키 | ✅ 필수 |
 | `AI_PASSWORD` | 원하는 비밀번호 (앱에서 AI 교정 최초 1회 입력) | 권장 |
-| `GEMINI_MODEL` | `gemini-2.5-flash` | 선택 |
+| `GEMINI_MODEL` | `gemini-2.5-flash` | 선택 (1순위 모델만 덮어쓰기) |
+| `GEMINI_MODELS` | `gemini-2.5-flash,gemini-2.5-flash-lite,gemini-2.0-flash` | 선택 (폴백 우선순위 체인) |
 | `ALLOWED_ORIGIN` | 본인 사이트 주소 (예: `https://mdpencil.netlify.app`) | 선택(권장) |
+
+> **다중 모델 폴백(Fallback):** 1순위 모델이 무료 티어 한도(429 / Quota
+> Exceeded)에 걸리면 자동으로 다음 순위 모델로 넘어갑니다. `GEMINI_MODELS` 에
+> 쉼표로 우선순위를 직접 지정할 수 있습니다(미설정 시 기본 체인 사용). 존재하지
+> 않는 모델 ID는 호출 시 건너뛰므로, 새 모델 ID를 자유롭게 끼워 넣어도 안전합니다.
+> 앱 헤더의 "배터리" 표시로 지금 어떤 모델이 응답했는지 확인할 수 있습니다.
 
 > **`AI_PASSWORD`** 를 설정하면, 앱에서 AI 교정을 처음 누를 때 이 비밀번호를
 > 입력해야 동작합니다(브라우저에 1회 저장). 모르는 사람이 프록시를 통해 내

@@ -19,6 +19,38 @@
 const PROXY_URL_KEY = 'mdpencil:geminiProxyUrl';
 const ENABLED_KEY = 'mdpencil:aiCorrectEnabled';
 const PASSWORD_KEY = 'mdpencil:aiPassword';
+const LAST_MODEL_KEY = 'mdpencil:lastModel';
+
+/** 모델 변경을 UI(배터리 표시)에 알리기 위한 커스텀 이벤트 이름. */
+export const MODEL_CHANGE_EVENT = 'mdpencil:modelchange';
+
+/**
+ * 프록시의 폴백 우선순위와 동일한 순서(프런트 표시용).
+ * 배터리 잔량 = 이 목록에서의 위치로 계산한다(앞일수록 가득 참 = 여유 있음).
+ * 프록시에서 GEMINI_MODELS 를 바꿔 목록에 없는 모델이 와도, UI는
+ * "알 수 없음 = 최하위"로 처리하므로 깨지지 않는다.
+ */
+export const MODEL_PRIORITY = [
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-lite',
+];
+
+/** 모델 ID → 사람이 읽기 좋은 표시 이름. 목록에 없으면 ID를 그대로 보여준다. */
+export const MODEL_LABELS = {
+  'gemini-2.5-flash': 'Gemini 2.5 Flash',
+  'gemini-2.5-flash-lite': 'Gemini 2.5 Flash Lite',
+  'gemini-2.0-flash': 'Gemini 2.0 Flash',
+  'gemini-2.0-flash-lite': 'Gemini 2.0 Flash Lite',
+  'gemini-3.1-flash-lite': 'Gemini 3.1 Flash Lite',
+  'gemini-3.5-flash': 'Gemini 3.5 Flash',
+};
+
+export function modelLabel(model) {
+  if (!model) return '';
+  return MODEL_LABELS[model] || model;
+}
 
 function readLocal(key) {
   try {
@@ -79,6 +111,24 @@ export function canCorrect() {
   return isAiCorrectEnabled() && !!getProxyUrl();
 }
 
+/** 마지막으로 실제 응답을 생성한 모델 ID(배터리 표시용). */
+export function getLastModel() {
+  return readLocal(LAST_MODEL_KEY) || '';
+}
+
+/**
+ * 마지막 사용 모델을 저장하고, UI가 즉시 갱신되도록 커스텀 이벤트를 쏜다.
+ * (localStorage 'storage' 이벤트는 같은 탭에서는 발생하지 않으므로 직접 dispatch.)
+ */
+function setLastModel(model) {
+  writeLocal(LAST_MODEL_KEY, model || '');
+  try {
+    window.dispatchEvent(new CustomEvent(MODEL_CHANGE_EVENT, { detail: model || '' }));
+  } catch {
+    /* 비브라우저 환경 무시 */
+  }
+}
+
 /**
  * 이미지(URL/dataURL/objectURL)를 Gemini inlineData 형식(base64 JPEG)으로
  * 변환한다. 전송량과 무료 티어 보호를 위해 긴 변을 maxDim으로 축소한다.
@@ -123,12 +173,12 @@ function err(message, code) {
  * @param {string} markdown OCR 결과 Markdown
  * @param {'ko'|'en'|'ja'} lang 주 언어 힌트
  * @param {{ image?: {mimeType:string,data:string}, timeoutMs?: number, signal?: AbortSignal }} [opts]
- * @returns {Promise<string>} 교정된 Markdown
+ * @returns {Promise<{ text: string, model: string }>} 교정된 Markdown과 응답 모델 ID
  */
 export async function correctMarkdown(markdown, lang = 'ko', opts = {}) {
   const proxyUrl = getProxyUrl();
   if (!proxyUrl) throw err('proxy URL not configured', 'no-config');
-  if (!markdown || !markdown.trim()) return markdown;
+  if (!markdown || !markdown.trim()) return { text: markdown, model: getLastModel() };
 
   const { image, timeoutMs = 60000, signal } = opts;
   const controller = new AbortController();
@@ -151,7 +201,10 @@ export async function correctMarkdown(markdown, lang = 'ko', opts = {}) {
     const data = await res.json();
     const out = typeof data?.text === 'string' ? data.text.trim() : '';
     if (!out) throw err('empty response', 'empty');
-    return out;
+    // 프록시가 알려준 "실제 응답 모델"을 저장해 배터리 표시에 반영한다.
+    const model = typeof data?.model === 'string' ? data.model : '';
+    setLastModel(model);
+    return { text: out, model };
   } finally {
     clearTimeout(timer);
   }
