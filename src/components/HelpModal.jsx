@@ -80,6 +80,10 @@ export default function HelpModal({ open, onClose }) {
               <div className={styles.mdExample}>{t('help.mdBold')}</div>
               <div className={styles.mdExample}>{t('help.mdParagraph')}</div>
             </div>
+            <p className={styles.sectionHint}>
+              <span className="material-icons">tips_and_updates</span>
+              {t('help.section3Hint')}
+            </p>
           </div>
 
           <div className={styles.section}>

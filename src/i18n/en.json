@@ -122,6 +122,7 @@
     "mdList": "- → List item",
     "mdBold": "**text** → Bold",
     "mdParagraph": "Blank line → Paragraph break",
+    "section3Hint": "Use the formatting buttons above the editor to insert syntax automatically. Click the 'Syntax' button for a more detailed guide.",
     "section4Title": "Text-to-Speech (TTS)",
     "section4Body": "Listen to results using browser speech. Play/pause/stop and speed control available. Markdown symbols are auto-removed."
   },

@@ -140,3 +140,23 @@
   font-family: 'Pretendard GOV Variable', monospace;
   color: var(--color-primary-dark);
 }
+
+.sectionHint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: var(--color-bg);
+  border-left: 3px solid var(--color-primary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.84rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.sectionHint .material-icons {
+  font-size: 18px;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
